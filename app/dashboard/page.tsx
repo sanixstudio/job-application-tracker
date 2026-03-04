@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { applications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { computeAnalytics } from "@/lib/analytics";
+import { DashboardAnalytics } from "./DashboardAnalytics";
 import { DashboardStats } from "./DashboardStats";
 import { ExtensionKeyCard } from "./ExtensionKeyCard";
 import { JobList } from "@/components/jobs/JobList";
@@ -17,7 +19,10 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const stats = await getStats(userId);
+  const [stats, analytics] = await Promise.all([
+    getStats(userId),
+    getAnalytics(userId),
+  ]);
 
   return (
     <div className="space-y-10">
@@ -31,6 +36,12 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardStats stats={stats} />
+
+      <DashboardAnalytics
+        funnel={analytics.funnel}
+        responseRate={analytics.responseRate}
+        staleCount={analytics.staleCount}
+      />
 
       <ExtensionKeyCard />
 
@@ -68,4 +79,21 @@ async function getStats(userId: string) {
     rejected: byStatus["rejected"] ?? 0,
     withdrawn: byStatus["withdrawn"] ?? 0,
   };
+}
+
+async function getAnalytics(userId: string) {
+  const rows = await db
+    .select({
+      status: applications.status,
+      appliedDate: applications.appliedDate,
+    })
+    .from(applications)
+    .where(eq(applications.userId, userId));
+
+  return computeAnalytics(
+    rows.map((r) => ({
+      status: r.status,
+      appliedDate: r.appliedDate,
+    }))
+  );
 }

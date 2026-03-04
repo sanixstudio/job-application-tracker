@@ -35,18 +35,21 @@
 
 ## 🚧 In Progress
 
-**Current sprint:** Sprint 4 — Chrome extension (M3). See `docs/sprints/SPRINT_04.md`.
+**Current sprint:** Sprint 5 complete. Next: Sprint 6 (e.g. email parsing) per product plan. See `docs/sprints/SPRINT_05.md`.
 
 ---
 
 ## 📋 Next (Phase II order, from product plan)
 
-### Sprint 4 — Chrome extension (M3) — IN PROGRESS
+### Sprint 4 — Chrome extension (M3) — DONE
 - [x] **S4-1** Extension-friendly save API: auth (API key or session), `POST /api/ext/save` or reuse `POST /api/jobs` with extension auth, CORS/docs
-- [ ] **S4-2** Chrome extension (Manifest V3): popup with URL/title/company, “Save to Trackr”, link to app
+- [x] **S4-2** Chrome extension (Manifest V3): popup with URL/title/company, “Save to Trackr”, link to app
 
-### After Sprint 4
-- [ ] **Application analytics** — Funnel, time-in-stage, response rate, dashboard tab (M3)
+### Sprint 5 — Application analytics (M3) — DONE
+- [x] **S5-1** Analytics API: funnel, response rate, no-response-14d (GET /api/analytics + server)
+- [x] **S5-2** Analytics dashboard section: funnel chart, response rate and stale cards, empty state
+
+### After Sprint 5
 - [ ] **Email parsing** — Inbound endpoint, parse → suggest “Add” / “Update status” (M4)
 - [ ] **Profile checklist** — Job-ready score, onboarding polish (M4)
 
@@ -62,17 +65,17 @@
 |-----------|-------------|-----------|
 | M1 Resume + export | ✅ Done | S1, S2 |
 | M2 AI tailoring    | ✅ Done | S3     |
-| M3 Extension + analytics | 🚧 Next | S4 (extension), then analytics |
+| M3 Extension + analytics | ✅ Done | S4, S5 |
 | M4 Email + checklist | 📋 Planned | — |
 
-**Overall:** Phase II in progress; foundation + resume + tailor complete. Next: Sprint 4 (Chrome extension).
+**Overall:** Phase II in progress; foundation + resume + tailor + extension + analytics complete. Next: email parsing or profile checklist (Sprint 6).
 
 ---
 
 ## 🎯 Immediate Next Steps
 
-1. Implement **S4-2** (Chrome extension): Manifest V3, popup form (URL, title, company), wire to `POST /api/ext/save` with `X-Trackr-API-Key`, “Open Trackr” link.
-2. Update `docs/sprints/SPRINT_04.md` when S4-2 is done.
+1. Implement **S5-1** (Analytics API): funnel counts, response rate, optional stale 14+ days. “Open Trackr”.
+2. Implement **S5-2** (Analytics UI). 3. Update `docs/sprints/SPRINT_05.md` as tasks complete.
 
 ---
 
