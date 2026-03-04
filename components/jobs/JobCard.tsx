@@ -19,14 +19,15 @@ interface JobCardProps {
   onDelete?: (id: string) => void;
 }
 
-const statusColors: Record<Application["status"], string> = {
-  applied: "bg-blue-500",
-  interview_1: "bg-yellow-500",
-  interview_2: "bg-orange-500",
-  interview_3: "bg-purple-500",
-  offer: "bg-green-500",
-  rejected: "bg-red-500",
-  withdrawn: "bg-gray-500",
+/* Semantic status colors — same tokens as dashboard for consistency */
+const statusBadgeClasses: Record<Application["status"], string> = {
+  applied: "bg-[var(--status-applied)] text-white border-0",
+  interview_1: "bg-[var(--status-interview)] text-white border-0",
+  interview_2: "bg-[var(--status-interview)] text-white border-0 opacity-90",
+  interview_3: "bg-[var(--status-interview)] text-white border-0 opacity-80",
+  offer: "bg-[var(--status-offer)] text-white border-0",
+  rejected: "bg-[var(--status-rejected)] text-white border-0",
+  withdrawn: "bg-[var(--status-withdrawn)] text-[var(--foreground)] border border-[var(--border)]",
 };
 
 const statusLabels: Record<Application["status"], string> = {
@@ -54,7 +55,7 @@ export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Badge
-              className={`${statusColors[job.status]} text-white border-0`}
+              className={statusBadgeClasses[job.status]}
               variant="default"
             >
               {statusLabels[job.status]}

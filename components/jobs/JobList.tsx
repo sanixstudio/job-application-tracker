@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Check } from "lucide-react";
 import type { ApplicationStatus } from "@/types";
 
 const STATUS_OPTIONS: { value: ApplicationStatus | "all"; label: string }[] = [
@@ -143,13 +144,19 @@ export function JobList() {
                 <DropdownMenuItem
                   key={opt.value}
                   onClick={() => setStatusFilter(opt.value)}
+                  className={statusFilter === opt.value ? "bg-[var(--accent)]" : undefined}
                 >
+                  {statusFilter === opt.value ? (
+                    <Check className="h-4 w-4 mr-2 text-[var(--primary)]" />
+                  ) : (
+                    <span className="w-4 mr-2" aria-hidden />
+                  )}
                   {opt.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" onClick={() => setIsFormOpen(true)}>
+          <Button size="sm" onClick={() => setIsFormOpen(true)} className="shadow-sm">
             <Plus className="h-4 w-4 mr-2" />
             Add application
           </Button>

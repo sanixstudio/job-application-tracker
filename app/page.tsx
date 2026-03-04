@@ -71,7 +71,11 @@ export default async function LandingPage() {
               glance.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button asChild size="lg" className="gap-2 text-base px-8">
+              <Button
+                asChild
+                size="lg"
+                className="gap-2 text-base px-8 shadow-md ring-2 ring-[var(--primary)]/20"
+              >
                 <Link href="/dashboard">
                   {userId ? "Go to dashboard" : "Start tracking"}
                   <ArrowRight className="h-4 w-4" />
@@ -125,7 +129,7 @@ export default async function LandingPage() {
 
         {/* CTA */}
         <section className="container mx-auto px-4 py-20 md:py-28">
-          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-[var(--border)] bg-[var(--card)] p-10 md:p-14 shadow-sm">
+          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-[var(--border)] bg-[var(--card)] p-10 md:p-14 shadow-sm border-l-4 border-l-[var(--primary)]">
             <h2 className="text-2xl font-semibold mb-3">
               Ready to organize your job search?
             </h2>
@@ -134,7 +138,7 @@ export default async function LandingPage() {
                 ? "Head to your dashboard to manage your applications."
                 : "Create a free account and start tracking in under a minute."}
             </p>
-            <Button asChild size="lg" className="gap-2">
+            <Button asChild size="lg" className="gap-2 shadow-sm">
               <Link href="/dashboard">
                 Go to dashboard
                 <ArrowRight className="h-4 w-4" />
