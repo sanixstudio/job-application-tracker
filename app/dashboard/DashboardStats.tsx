@@ -57,23 +57,30 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
   ];
 
   return (
-    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
+    <section
+      aria-label="Application pipeline summary"
+      className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5"
+    >
       {cards.map(({ title, value, icon: Icon, accent, iconColor }) => (
         <Card
           key={title}
+          role="group"
+          aria-label={`${title}: ${value}`}
           className={`rounded-xl border-[var(--border)] bg-[var(--card)] ${accent}`}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 pt-4">
-            <CardTitle className="text-sm font-medium text-[var(--muted-foreground)]">
+            <CardTitle className="text-sm font-medium tracking-tight text-[var(--stat-label)]">
               {title}
             </CardTitle>
             <Icon className={`h-4 w-4 ${iconColor}`} aria-hidden />
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-semibold tabular-nums">{value}</div>
+            <p className="text-2xl font-semibold tabular-nums tracking-tight text-[var(--stat-value)]">
+              {value}
+            </p>
           </CardContent>
         </Card>
       ))}
-    </div>
+    </section>
   );
 }

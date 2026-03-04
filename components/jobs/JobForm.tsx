@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -62,23 +63,47 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
     formState: { errors, isSubmitting },
   } = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
-    defaultValues: initialData
-      ? {
-          jobTitle: initialData.jobTitle,
-          companyName: initialData.companyName,
-          jobUrl: initialData.jobUrl,
-          applicationUrl: initialData.applicationUrl || "",
-          status: initialData.status,
-          notes: initialData.notes || "",
-          salaryRange: initialData.salaryRange || "",
-          location: initialData.location || "",
-        }
-      : {
-          status: "applied",
-        },
+    defaultValues: {
+      jobTitle: "",
+      companyName: "",
+      jobUrl: "",
+      applicationUrl: "",
+      status: "applied",
+      notes: "",
+      salaryRange: "",
+      location: "",
+    },
   });
 
   const status = watch("status");
+
+  // Populate form when dialog opens (edit) or reset when opening for new job
+  useEffect(() => {
+    if (!open) return;
+    if (initialData) {
+      reset({
+        jobTitle: initialData.jobTitle,
+        companyName: initialData.companyName,
+        jobUrl: initialData.jobUrl,
+        applicationUrl: initialData.applicationUrl ?? "",
+        status: initialData.status,
+        notes: initialData.notes ?? "",
+        salaryRange: initialData.salaryRange ?? "",
+        location: initialData.location ?? "",
+      });
+    } else {
+      reset({
+        jobTitle: "",
+        companyName: "",
+        jobUrl: "",
+        applicationUrl: "",
+        status: "applied",
+        notes: "",
+        salaryRange: "",
+        location: "",
+      });
+    }
+  }, [open, initialData, reset]);
 
   const handleFormSubmit = async (data: JobFormValues) => {
     await onSubmit({

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { SignInButton } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Briefcase,
   BarChart3,
@@ -30,7 +31,8 @@ export default async function LandingPage() {
             <Briefcase className="h-6 w-6 text-[var(--primary)]" />
             Trackr
           </Link>
-          <nav className="flex items-center gap-3">
+          <nav className="flex items-center gap-2">
+            <ThemeToggle />
             {userId ? (
               <>
                 <Button asChild variant="ghost" size="sm">

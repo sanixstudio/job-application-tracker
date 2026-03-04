@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Dashboard layout: header with logo + Clerk UserButton.
@@ -20,13 +21,14 @@ export default function DashboardLayout({
             <Briefcase className="h-5 w-5 text-[var(--primary)]" />
             Trackr
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link
               href="/"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Home
             </Link>
+            <ThemeToggle />
             <UserButton
               appearance={{
                 elements: {
