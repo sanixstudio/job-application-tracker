@@ -10,7 +10,7 @@ export default function DashboardLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-(--background)">
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <header className="border-b border-[var(--border)] sticky top-0 z-50 bg-[var(--background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/60">
         <div className="container mx-auto flex h-14 items-center justify-between px-4">
           <Link

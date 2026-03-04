@@ -91,9 +91,11 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Job Application" : "Add Job Application"}</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-[var(--border)]">
+          <DialogTitle className="text-xl">
+            {initialData ? "Edit application" : "Add application"}
+          </DialogTitle>
           <DialogDescription>
             {initialData
               ? "Update the details of your job application."
@@ -101,7 +103,11 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="flex flex-col min-h-0 flex-1 overflow-hidden"
+        >
+          <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="jobTitle">Job Title *</Label>
@@ -204,8 +210,9 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
               rows={4}
             />
           </div>
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 shrink-0 border-t border-[var(--border)] bg-[var(--muted)]/30">
             <Button
               type="button"
               variant="outline"

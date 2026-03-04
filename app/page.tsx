@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
 import { SignInButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
   Briefcase,
@@ -11,10 +13,11 @@ import {
 } from "lucide-react";
 
 /**
- * Landing page — public, no auth required.
- * CTAs (Start tracking / Sign in) send users to /dashboard (Clerk redirects to sign-in if needed).
+ * Landing page — public. When signed in, shows Dashboard CTAs only (no SignIn modal trigger).
  */
-export default function LandingPage() {
+export default async function LandingPage() {
+  const { userId } = await auth();
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
       {/* Header */}
@@ -28,14 +31,29 @@ export default function LandingPage() {
             Trackr
           </Link>
           <nav className="flex items-center gap-3">
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </SignInButton>
-            <SignInButton mode="modal">
-              <Button size="sm">Get started</Button>
-            </SignInButton>
+            {userId ? (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <UserButton
+                  appearance={{
+                    elements: { avatarBox: "h-8 w-8" },
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm">
+                    Sign in
+                  </Button>
+                </SignInButton>
+                <SignInButton mode="modal">
+                  <Button size="sm">Get started</Button>
+                </SignInButton>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -48,20 +66,24 @@ export default function LandingPage() {
               Never lose track of a job application again
             </h1>
             <p className="text-lg md:text-xl text-[var(--muted-foreground)] max-w-2xl mx-auto leading-relaxed">
-              One place to track applications, interviews, and offers. Add jobs manually, update status in a click, and see your pipeline at a glance.
+              One place to track applications, interviews, and offers. Add jobs
+              manually, update status in a click, and see your pipeline at a
+              glance.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button asChild size="lg" className="gap-2 text-base px-8">
                 <Link href="/dashboard">
-                  Start tracking
+                  {userId ? "Go to dashboard" : "Start tracking"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <SignInButton mode="modal">
-                <Button variant="outline" size="lg" className="gap-2 text-base">
-                  Sign in
-                </Button>
-              </SignInButton>
+              {!userId && (
+                <SignInButton mode="modal">
+                  <Button variant="outline" size="lg" className="gap-2 text-base">
+                    Sign in
+                  </Button>
+                </SignInButton>
+              )}
             </div>
           </div>
         </section>
@@ -73,7 +95,8 @@ export default function LandingPage() {
               Everything you need to stay on top of your job search
             </h2>
             <p className="text-[var(--muted-foreground)] text-center max-w-xl mx-auto mb-14">
-              Built for developers and job seekers who want clarity without the clutter.
+              Built for developers and job seekers who want clarity without the
+              clutter.
             </p>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
               <FeatureCard
@@ -107,7 +130,9 @@ export default function LandingPage() {
               Ready to organize your job search?
             </h2>
             <p className="text-[var(--muted-foreground)] mb-8">
-              Create a free account and start tracking in under a minute.
+              {userId
+                ? "Head to your dashboard to manage your applications."
+                : "Create a free account and start tracking in under a minute."}
             </p>
             <Button asChild size="lg" className="gap-2">
               <Link href="/dashboard">
@@ -121,7 +146,8 @@ export default function LandingPage() {
 
       <footer className="border-t border-[var(--border)] py-8">
         <div className="container mx-auto px-4 text-center text-sm text-[var(--muted-foreground)]">
-          © {new Date().getFullYear()} Trackr. Job application tracking made simple.
+          © {new Date().getFullYear()} Trackr. Job application tracking made
+          simple.
         </div>
       </footer>
     </div>

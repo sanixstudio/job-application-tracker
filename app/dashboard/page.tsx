@@ -21,8 +21,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-(--muted-foreground) mt-1">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          Dashboard
+        </h1>
+        <p className="text-sm text-[var(--muted-foreground)] mt-1">
           Track and manage your job applications
         </p>
       </div>
