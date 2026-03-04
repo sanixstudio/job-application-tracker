@@ -100,7 +100,7 @@ We don’t require full test coverage for every first version; we do add tests f
 |------|--------|
 | Product vision & roadmap | `docs/PRODUCT_AND_ENGINEERING_PLAN.md` |
 | This PM plan | `docs/PROJECT_MANAGEMENT_PLAN.md` |
-| Current sprint | `docs/sprints/SPRINT_01.md`, `SPRINT_02.md`, … |
+| Current sprint | `docs/sprints/SPRINT_04.md` (Sprints 1–3 done) |
 | DB schema | `lib/db/schema.ts` |
 | Migrations | `lib/db/migrations/` |
 
@@ -108,4 +108,4 @@ We don’t require full test coverage for every first version; we do add tests f
 
 ## 8. Next Step
 
-Open **`docs/sprints/SPRINT_01.md`** and start with **Task S1-1**. When a task is done, set its status to **Done** and move to the next. At the end of the sprint we’ll close out the doc and create `SPRINT_02.md` for M1 continuation (or export, depending on what we deferred).
+**Current sprint:** **`docs/sprints/SPRINT_04.md`** (Chrome extension, M3). Start with **S4-1**, then **S4-2**. **Completed:** Sprints 1–3 (resume, PDF export, AI tailor). When a task is done, set its status to **Done** and move to the next. At the end of the sprint we’ll close out the doc and create the next sprint (e.g. analytics) per the product plan.

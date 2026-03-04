@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Trackr — Save job to tracker",
+  "version": "1.0.0",
+  "description": "Save the current job listing to your Trackr dashboard. Paste your API key from Trackr, then save jobs from any job board.",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["http://localhost:3000/*", "https://*/*"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -11,7 +11,7 @@ export type ApplicationStatus =
   | "rejected"
   | "withdrawn";
 
-export type JobSource = "builtin" | "manual" | "other";
+export type JobSource = "builtin" | "manual" | "other" | "extension";
 
 export interface Application {
   id: string;

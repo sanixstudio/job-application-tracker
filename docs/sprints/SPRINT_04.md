@@ -10,7 +10,7 @@
 
 ### S4-1 — Extension-friendly save API
 
-**Status:** Not started
+**Status:** Done
 
 **Description:** Ensure the app can accept a “save job” request from the extension. Reuse existing `POST /api/jobs` where possible; add auth that works for the extension (e.g. API key or session cookie when extension runs in same origin).
 
@@ -28,7 +28,7 @@
 
 ### S4-2 — Chrome extension (minimal)
 
-**Status:** Not started
+**Status:** Done
 
 **Description:** Build a Chrome extension (Manifest V3) that lets the user save the current job to Trackr: URL (required), title and company (pre-filled from page or manual).
 
@@ -49,8 +49,8 @@
 
 | Task | Status       |
 |------|--------------|
-| S4-1 | Not started  |
-| S4-2 | Not started  |
+| S4-1 | Done         |
+| S4-2 | Done         |
 
 **Sprint 4 outcome:** _To be filled when we close the sprint._
 

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { applications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { DashboardStats } from "./DashboardStats";
+import { ExtensionKeyCard } from "./ExtensionKeyCard";
 import { JobList } from "@/components/jobs/JobList";
 
 /**
@@ -30,6 +31,8 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardStats stats={stats} />
+
+      <ExtensionKeyCard />
 
       <JobList />
     </div>

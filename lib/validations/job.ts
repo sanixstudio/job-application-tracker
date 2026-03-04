@@ -10,7 +10,7 @@ const applicationStatusEnum = z.enum([
   "withdrawn",
 ]);
 
-const jobSourceEnum = z.enum(["builtin", "manual", "other"]);
+const jobSourceEnum = z.enum(["builtin", "manual", "other", "extension"]);
 
 /** Schema for creating a job application (POST /api/jobs). */
 export const createJobSchema = z.object({

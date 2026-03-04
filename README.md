@@ -82,18 +82,20 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 
 ## 🎯 Usage
 
-1. **Add a Job Application:**
+1. **Save from browser (Chrome extension):** Generate an API key on the dashboard (**Save from browser** → **Generate API key**), then load the Chrome extension from the `extension/` folder ([extension/README.md](./extension/README.md)) and paste the key. Open any job listing tab, click the extension, fill title/company, and click **Save to Trackr**.
+
+2. **Add a Job Application:**
    - Click "Add Job" button
    - Fill in job details (title, company, URL, etc.)
    - Select status
    - Save
 
-2. **View Applications:**
+3. **View Applications:**
    - See all applications on the dashboard
    - Filter by status using the dropdown
    - Click "View Job" to open job posting
 
-3. **Edit/Delete:**
+4. **Edit/Delete:**
    - Click "Edit" on any job card to update details
    - Click "Delete" to remove an application
 
@@ -113,6 +115,7 @@ See `.env.example` for a template.
 ## Project Structure
 
 ```
+extension/                 # Chrome extension (load unpacked) — save jobs from any tab
 app/
 ├── api/jobs/              # Job CRUD API (auth + Zod)
 ├── dashboard/             # Protected dashboard (SSR stats + client JobList)

@@ -48,7 +48,8 @@
 | S3-1 | Done     |
 | S3-2 | Done     |
 
-**Sprint 3 outcome:** User can open "Tailor for a job", paste a JD, get AI suggestions (tailored summary, keywords, bullet ideas), and apply the summary to their resume. Requires `OPENAI_API_KEY` in `.env.local`.
+**Sprint 3 outcome:** User can open "Tailor for a job", paste a JD, get AI suggestions (tailored summary, keywords, bullet ideas), and apply the summary to their resume. Key points from the suggestion are shown as chips on the resume after save. Requires `OPENAI_API_KEY` in `.env.local`.  
+_Note: "Previous responses" (tailor history) was removed; suggestions are not persisted for later listing._
 
 ---
 

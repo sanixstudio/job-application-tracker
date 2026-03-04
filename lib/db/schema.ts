@@ -60,18 +60,24 @@ export const emailTracking = pgTable(
   (table) => [index("idx_email_tracking_processed").on(table.processed)]
 );
 
-export const userSettings = pgTable("user_settings", {
-  userId: text("user_id").primaryKey(),
-  gmailAddress: text("gmail_address"),
-  sheetsId: text("sheets_id"),
-  checkFrequency: text("check_frequency")
-    .notNull()
-    .$type<"twice_daily" | "daily" | "hourly">()
-    .default("twice_daily"),
-  autoApply: boolean("auto_apply").notNull().default(false),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-});
+export const userSettings = pgTable(
+  "user_settings",
+  {
+    userId: text("user_id").primaryKey(),
+    gmailAddress: text("gmail_address"),
+    sheetsId: text("sheets_id"),
+    checkFrequency: text("check_frequency")
+      .notNull()
+      .$type<"twice_daily" | "daily" | "hourly">()
+      .default("twice_daily"),
+    autoApply: boolean("auto_apply").notNull().default(false),
+    /** API key for Chrome extension (X-Trackr-API-Key). Nullable; unique when set. */
+    extensionApiKey: text("extension_api_key"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [index("idx_user_settings_extension_api_key").on(table.extensionApiKey)]
+);
 
 export const resumes = pgTable(
   "resumes",
