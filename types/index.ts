@@ -90,9 +90,18 @@ export interface ResumeSection {
   items?: Array<Record<string, string>>;
 }
 
+/** Snapshot of the last applied tailor suggestion (shown as chips + optional details). */
+export interface LastTailorSnapshot {
+  keywords: string[];
+  tailoredSummary?: string;
+  bulletSuggestions?: string[];
+}
+
 /** Resume content stored in DB as JSONB. */
 export interface ResumeContent {
   sections?: ResumeSection[];
+  /** When user applies a tailor suggestion, we store keywords (and optional summary/bullets) for display. */
+  lastTailorSnapshot?: LastTailorSnapshot;
 }
 
 export interface Resume {

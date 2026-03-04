@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from "openai";
-import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { resumes, tailorHistory } from "@/lib/db/schema";
-import { eq, and, desc, notInArray } from "drizzle-orm";
+import { resumes } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import type { ResumeContent } from "@/types";
 
 /** Build a short plain-text version of resume for the prompt. */
@@ -116,34 +115,6 @@ Keep tailoredSummary under 150 words. Include 5-10 keywords from the job that th
         { success: false, error: "Invalid AI response format" },
         { status: 502 }
       );
-    }
-
-    try {
-      const preview = jobDescription.slice(0, 500);
-      const id = nanoid();
-      await db.insert(tailorHistory).values({
-        id,
-        userId,
-        jobDescriptionPreview: preview,
-        result: data as unknown as Record<string, unknown>,
-      });
-
-      const recent = await db
-        .select({ id: tailorHistory.id })
-        .from(tailorHistory)
-        .where(eq(tailorHistory.userId, userId))
-        .orderBy(desc(tailorHistory.createdAt))
-        .limit(5);
-      const keptIds = recent.map((r) => r.id);
-      if (keptIds.length > 0) {
-        await db
-          .delete(tailorHistory)
-          .where(
-            and(eq(tailorHistory.userId, userId), notInArray(tailorHistory.id, keptIds))
-          );
-      }
-    } catch (historyError) {
-      console.warn("Tailor history save failed (table may not exist yet). Run: npm run db:migrate", historyError);
     }
 
     return NextResponse.json({ success: true, data });

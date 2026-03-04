@@ -16,9 +16,16 @@ const resumeSectionSchema = z.object({
   items: z.array(z.record(z.string(), z.string())).optional(),
 });
 
+const lastTailorSnapshotSchema = z.object({
+  keywords: z.array(z.string()),
+  tailoredSummary: z.string().optional(),
+  bulletSuggestions: z.array(z.string()).optional(),
+});
+
 /** Schema for resume content (JSONB). */
 export const resumeContentSchema = z.object({
   sections: z.array(resumeSectionSchema).optional().default([]),
+  lastTailorSnapshot: lastTailorSnapshotSchema.optional(),
 });
 
 /** Schema for creating a resume (POST /api/resumes). */

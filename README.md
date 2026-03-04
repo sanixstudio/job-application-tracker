@@ -74,7 +74,6 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
   npm run db:studio
   ```
   Set `DATABASE_URL` in `.env.local` before running.
-- **Resume Tailor history:** The "Previous responses" list in Tailor for a job uses the `tailor_history` table. If you don't see history, run `npm run db:migrate` (against the same database as your app).
 
 ## 📚 Documentation
 

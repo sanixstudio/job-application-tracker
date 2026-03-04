@@ -15,17 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download, Sparkles, History } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download, Sparkles, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useCallback } from "react";
-import type { Resume, ResumeContent, ResumeSection } from "@/types";
-
-/** One entry from GET /api/ai/tailor/history (last 5 responses). */
-interface TailorHistoryEntry {
-  id: string;
-  jobDescriptionPreview: string;
-  result: { tailoredSummary?: string; keywords?: string[]; bulletSuggestions?: string[] };
-  createdAt: string;
-}
+import type { Resume, ResumeContent, ResumeSection, LastTailorSnapshot } from "@/types";
 
 async function fetchResume(): Promise<Resume | null> {
   const res = await fetch("/api/resumes");
@@ -71,6 +63,8 @@ export default function ResumePage() {
     bulletSuggestions?: string[];
   } | null>(null);
   const [isTailoring, setIsTailoring] = useState(false);
+  const [pendingTailorSnapshot, setPendingTailorSnapshot] = useState<LastTailorSnapshot | null>(null);
+  const [showSnapshotDetail, setShowSnapshotDetail] = useState(false);
 
   const { data: resume, isLoading, error } = useQuery({
     queryKey: ["resume"],
@@ -106,6 +100,7 @@ export default function ResumePage() {
       updateResume(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume"] });
+      setPendingTailorSnapshot(null);
       toast.success("Resume saved");
       setIsEditing(false);
     },
@@ -144,20 +139,6 @@ export default function ResumePage() {
     }
   };
 
-  async function fetchTailorHistory(): Promise<TailorHistoryEntry[]> {
-    const res = await fetch("/api/ai/tailor/history");
-    const json = await res.json();
-    if (json.success && Array.isArray(json.data)) return json.data;
-    return [];
-  }
-
-  const { data: tailorHistory = [], isLoading: tailorHistoryLoading, refetch: refetchTailorHistory } = useQuery({
-    queryKey: ["tailor-history"],
-    queryFn: fetchTailorHistory,
-    enabled: tailorOpen,
-    staleTime: 0,
-  });
-
   const handleGetTailorSuggestions = async () => {
     if (!resume || !jobDescriptionForTailor.trim()) return;
     setIsTailoring(true);
@@ -174,7 +155,6 @@ export default function ResumePage() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error ?? "Failed to get suggestions");
       setTailorResult(data.data);
-      await refetchTailorHistory();
     } catch (err) {
       toast.error("Could not get suggestions", {
         description: err instanceof Error ? err.message : "Something went wrong",
@@ -186,11 +166,16 @@ export default function ResumePage() {
 
   const handleApplyTailoredSummary = () => {
     if (tailorResult?.tailoredSummary && resume) {
+      setPendingTailorSnapshot({
+        keywords: tailorResult.keywords ?? [],
+        tailoredSummary: tailorResult.tailoredSummary,
+        bulletSuggestions: tailorResult.bulletSuggestions,
+      });
       enterEditMode(resume, { summaryOverride: tailorResult.tailoredSummary });
       setTailorOpen(false);
       setTailorResult(null);
       setJobDescriptionForTailor("");
-      toast.success("Summary applied. Edit and save when ready.");
+      toast.success("Summary applied. Save to keep the highlighted key points on your resume.");
     }
   };
 
@@ -200,6 +185,7 @@ export default function ResumePage() {
       const summary = resume.content?.sections?.find((s) => s.type === "summary");
       setSummaryBody(summary?.body ?? "");
     }
+    setShowSnapshotDetail(false);
     setIsEditing(false);
   };
 
@@ -216,9 +202,13 @@ export default function ResumePage() {
     if (summaryIdx >= 0) sections[summaryIdx] = summarySection;
     else sections.push(summarySection);
 
+    const lastTailorSnapshot = pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot;
     updateMutation.mutate({
       id: resume.id,
-      payload: { title: title || undefined, content: { sections } },
+      payload: {
+        title: title || undefined,
+        content: { ...resume.content, sections, lastTailorSnapshot },
+      },
     });
   };
 
@@ -310,6 +300,54 @@ export default function ResumePage() {
                 rows={4}
                 className="resize-y"
               />
+              {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)!.keywords.map((k) => (
+                      <span
+                        key={k}
+                        className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                      >
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSnapshotDetail((v) => !v)}
+                    className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                    {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
+                    {showSnapshotDetail ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  </button>
+                  {showSnapshotDetail && (() => {
+                    const snap = pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot;
+                    if (!snap) return null;
+                    return (
+                      <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                        {snap.tailoredSummary && (
+                          <div>
+                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
+                            <p className="text-[var(--foreground)] whitespace-pre-wrap">{snap.tailoredSummary}</p>
+                          </div>
+                        )}
+                        {(snap.bulletSuggestions?.length ?? 0) > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
+                            <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
+                              {snap.bulletSuggestions!.map((b, i) => (
+                                <li key={i}>{b}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : null}
             </div>
             <div className="flex gap-2">
               <Button
@@ -350,14 +388,61 @@ export default function ResumePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {resume.content?.sections?.map((s) => (
-            <div key={s.id}>
-              <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1">{s.heading}</h3>
-              {s.body && (
-                <p className="text-sm text-[var(--muted-foreground)] whitespace-pre-wrap">{s.body}</p>
-              )}
-            </div>
-          ))}
+          {resume.content?.sections?.map((s) => {
+            const snapshot = s.type === "summary" ? (resume.content?.lastTailorSnapshot) : undefined;
+            return (
+              <div key={s.id}>
+                <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1">{s.heading}</h3>
+                {s.body && (
+                  <p className="text-sm text-[var(--muted-foreground)] whitespace-pre-wrap">{s.body}</p>
+                )}
+                {snapshot?.keywords?.length ? (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
+                    <div className="flex flex-wrap gap-2">
+                      {snapshot.keywords.map((k) => (
+                        <span
+                          key={k}
+                          className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                        >
+                          {k}
+                        </span>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowSnapshotDetail((v) => !v)}
+                      className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                      {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
+                      {showSnapshotDetail ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    </button>
+                    {showSnapshotDetail && (
+                      <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                        {snapshot.tailoredSummary && (
+                          <div>
+                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
+                            <p className="text-[var(--foreground)] whitespace-pre-wrap">{snapshot.tailoredSummary}</p>
+                          </div>
+                        )}
+                        {(snapshot.bulletSuggestions?.length ?? 0) > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
+                            <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
+                              {snapshot.bulletSuggestions!.map((b, i) => (
+                                <li key={i}>{b}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
           {(!resume.content?.sections?.length || sectionCount === 0) && (
             <p className="text-sm text-[var(--muted-foreground)]">No sections yet. Click Edit to add content.</p>
           )}
@@ -469,47 +554,6 @@ export default function ResumePage() {
                 />
               </div>
             )}
-
-            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-              <p className="text-xs font-medium text-[var(--muted-foreground)] flex items-center gap-1.5">
-                <History className="h-3.5 w-3.5" />
-                Previous responses
-              </p>
-              {tailorHistoryLoading ? (
-                <p className="text-sm text-[var(--muted-foreground)] flex items-center gap-2 py-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Loading…
-                </p>
-              ) : tailorHistory.length === 0 ? (
-                <p className="text-sm text-[var(--muted-foreground)] py-2">
-                  No previous responses yet. Your last 5 suggestions will appear here.
-                </p>
-              ) : (
-                <ul className="space-y-1.5">
-                  {tailorHistory.map((entry) => {
-                    const preview = entry.jobDescriptionPreview.slice(0, 70).trim();
-                    const previewSuffix = preview.length >= 70 ? "…" : "";
-                    const date = new Date(entry.createdAt);
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    const timeLabel = isToday
-                      ? date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
-                      : date.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-                    return (
-                      <li key={entry.id}>
-                        <button
-                          type="button"
-                          onClick={() => setTailorResult(entry.result)}
-                          className="w-full text-left rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm hover:bg-[var(--muted)]/50 hover:border-[var(--primary)]/30 transition-colors"
-                        >
-                          <span className="block text-[var(--muted-foreground)] text-xs mb-0.5">{timeLabel}</span>
-                          <span className="text-[var(--foreground)] line-clamp-2">{preview}{previewSuffix}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
           </div>
           <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row px-6 pb-6 pt-2 border-t border-[var(--border)]">
             {tailorResult ? (
