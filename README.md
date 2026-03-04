@@ -1,85 +1,79 @@
-# Job Application Automation System
+# Trackr — Job Application Tracker
 
-Automate and track your job application process. Monitor Gmail for Builtin job emails, extract job links, manage applications, and sync with Google Sheets.
+Track and manage your job applications in one place. Sign in with Clerk, store data in Neon PostgreSQL, and keep your pipeline visible on a single dashboard.
 
-## 🚀 Features
+## Features
 
-### ✅ Phase 1: Foundation (Completed)
-- **Job Tracking Dashboard**: Beautiful UI built with shadcn/ui
-- **CRUD Operations**: Add, edit, delete, and view job applications
-- **Status Management**: Track applications through interview stages
-- **Filtering**: Filter jobs by status (Applied, Interview, Offer, Rejected, etc.)
-- **Database**: SQLite database with Drizzle ORM (easily migratable to PostgreSQL)
-- **Responsive Design**: Works on desktop and mobile
+- **Landing page** — Clear value proposition and CTAs (Start tracking / Sign in)
+- **Authentication** — Clerk (sign-in, sign-up, protected dashboard)
+- **Dashboard** — Stats (total, applied, interviews, offers, rejected) and full job list
+- **CRUD** — Add, edit, delete, and filter job applications
+- **Status pipeline** — Applied → Interview 1–3 → Offer / Rejected / Withdrawn
+- **Database** — Neon PostgreSQL with Drizzle ORM
+- **Validation** — Zod on API and React Hook Form on the client
 
-### ⏳ Phase 2: Email Integration (Next)
-- Gmail API integration for email monitoring
-- Automatic Builtin job email detection
-- Job link extraction from emails
-- Scheduled email checks (twice daily)
-
-### ⏳ Phase 3: Google Sheets Sync (Next)
-- Sync applications to Google Sheets
-- Real-time updates
-- Manual sync option
-
-### ⏳ Phase 4: Automation (Future)
-- Playwright-based form filling
-- Resume/CV upload automation
-- Confirmation email detection
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript
 - **UI**: shadcn/ui, Tailwind CSS v4
-- **State Management**: Zustand, TanStack Query
-- **Forms**: React Hook Form, Zod validation
-- **Database**: SQLite (local) / PostgreSQL (production)
-- **ORM**: Drizzle ORM
-- **Email**: Gmail API (googleapis)
-- **Automation**: Playwright
-- **Sheets**: Google Sheets API
+- **Auth**: Clerk
+- **Data**: TanStack React Query, React Hook Form, Zod
+- **Database**: Neon PostgreSQL, Drizzle ORM
 
-## 📦 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
+- [Clerk](https://clerk.com) account (free tier)
+- [Neon](https://neon.tech) PostgreSQL database (free tier)
 
 ### Installation
 
-1. **Clone and install dependencies:**
+1. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
+2. **Environment variables**
    ```bash
    cp .env.example .env.local
    ```
-   
-   For MVP, you can start without Gmail/Sheets credentials. The app works for manual job entry.
+   Edit `.env.local`:
+   - **Clerk**: Create an application at [dashboard.clerk.com](https://dashboard.clerk.com), add your app URL, and copy `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
+   - **Neon**: Create a project at [neon.tech](https://neon.tech), copy the connection string into `DATABASE_URL`.
 
-3. **Run development server:**
+3. **Run migrations**
+   ```bash
+   npm run db:migrate
+   ```
+   (Requires `DATABASE_URL` in `.env.local`.)
+
+4. **Start the dev server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+5. **Open the app**
+   - Landing: [http://localhost:3000](http://localhost:3000)
+   - Sign in / Sign up: `/sign-in`, `/sign-up`
+   - Dashboard (protected): [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 
-### Database Management
+### Database
 
-View your database:
-```bash
-npm run db:studio
-```
-
-Generate migrations:
-```bash
-npm run db:generate
-```
+- **Generate migrations** (after schema changes):
+  ```bash
+  npm run db:generate
+  ```
+- **Apply migrations**:
+  ```bash
+  npm run db:migrate
+  ```
+- **Open Drizzle Studio**:
+  ```bash
+  npm run db:studio
+  ```
+  Set `DATABASE_URL` in `.env.local` before running.
 
 ## 📚 Documentation
 
@@ -103,36 +97,35 @@ npm run db:generate
    - Click "Edit" on any job card to update details
    - Click "Delete" to remove an application
 
-## 🔐 Environment Variables
+## Environment Variables
 
-See `.env.example` for required environment variables. For MVP, only database configuration is needed.
+| Variable | Description |
+|--------|-------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Clerk secret key |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | Optional; default redirect after sign-in (e.g. `/dashboard`) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Optional; default redirect after sign-up |
+| `DATABASE_URL` | Neon PostgreSQL connection string |
 
-## 📁 Project Structure
+See `.env.example` for a template.
+
+## Project Structure
 
 ```
-dev-automate/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   └── jobs/          # Job CRUD endpoints
-│   ├── page.tsx           # Dashboard home
-│   └── layout.tsx         # Root layout
-├── components/
-│   ├── ui/                # shadcn/ui components
-│   └── jobs/              # Job-related components
-├── lib/
-│   ├── db/                # Database schema and connection
-│   ├── services/         # Business logic (coming soon)
-│   └── utils/            # Utility functions
-└── types/                 # TypeScript definitions
+app/
+├── api/jobs/              # Job CRUD API (auth + Zod)
+├── dashboard/             # Protected dashboard (SSR stats + client JobList)
+├── sign-in/[[...sign-in]]/ # Clerk sign-in
+├── sign-up/[[...sign-up]]/ # Clerk sign-up
+├── page.tsx               # Landing page
+└── layout.tsx             # Root layout (ClerkProvider + Query)
+components/
+├── ui/                    # shadcn/ui
+└── jobs/                  # JobList, JobCard, JobForm (client)
+lib/
+├── db/                    # Drizzle schema + Neon connection
+└── validations/           # Zod schemas (job create/update)
 ```
-
-## 🚧 Roadmap
-
-- [x] Phase 1: Foundation & UI
-- [ ] Phase 2: Gmail Integration
-- [ ] Phase 3: Google Sheets Sync
-- [ ] Phase 4: Form Automation
-- [ ] Phase 5: SaaS Features
 
 ## 📝 License
 
