@@ -85,3 +85,19 @@ export const resumes = pgTable(
   },
   (table) => [index("idx_resumes_user_id").on(table.userId)]
 );
+
+/** Last 5 AI tailor responses per user for "Previous responses" in the Tailor modal. */
+export const tailorHistory = pgTable(
+  "tailor_history",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    jobDescriptionPreview: text("job_description_preview").notNull(),
+    result: jsonb("result").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_tailor_history_user_id").on(table.userId),
+    index("idx_tailor_history_user_created").on(table.userId, table.createdAt),
+  ]
+);

@@ -74,6 +74,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
   npm run db:studio
   ```
   Set `DATABASE_URL` in `.env.local` before running.
+- **Resume Tailor history:** The "Previous responses" list in Tailor for a job uses the `tailor_history` table. If you don't see history, run `npm run db:migrate` (against the same database as your app).
 
 ## 📚 Documentation
 
@@ -106,6 +107,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 | `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | Optional; default redirect after sign-in (e.g. `/dashboard`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Optional; default redirect after sign-up |
 | `DATABASE_URL` | Neon PostgreSQL connection string |
+| `OPENAI_API_KEY` | Optional. OpenAI API key for Resume "Tailor for a job" suggestions; omit to disable (API returns 503). |
 
 See `.env.example` for a template.
 

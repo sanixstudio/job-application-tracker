@@ -4,12 +4,28 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download, Sparkles, History } from "lucide-react";
 import { useState, useCallback } from "react";
 import type { Resume, ResumeContent, ResumeSection } from "@/types";
+
+/** One entry from GET /api/ai/tailor/history (last 5 responses). */
+interface TailorHistoryEntry {
+  id: string;
+  jobDescriptionPreview: string;
+  result: { tailoredSummary?: string; keywords?: string[]; bulletSuggestions?: string[] };
+  createdAt: string;
+}
 
 async function fetchResume(): Promise<Resume | null> {
   const res = await fetch("/api/resumes");
@@ -47,20 +63,28 @@ export default function ResumePage() {
   const [title, setTitle] = useState("");
   const [summaryBody, setSummaryBody] = useState("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [tailorOpen, setTailorOpen] = useState(false);
+  const [jobDescriptionForTailor, setJobDescriptionForTailor] = useState("");
+  const [tailorResult, setTailorResult] = useState<{
+    tailoredSummary?: string;
+    keywords?: string[];
+    bulletSuggestions?: string[];
+  } | null>(null);
+  const [isTailoring, setIsTailoring] = useState(false);
 
   const { data: resume, isLoading, error } = useQuery({
     queryKey: ["resume"],
     queryFn: fetchResume,
   });
 
-  const enterEditMode = useCallback((r: Resume | null) => {
+  const enterEditMode = useCallback((r: Resume | null, options?: { summaryOverride?: string }) => {
     if (r) {
       setTitle(r.title);
       const summary = r.content?.sections?.find((s) => s.type === "summary");
-      setSummaryBody(summary?.body ?? "");
+      setSummaryBody(options?.summaryOverride ?? summary?.body ?? "");
     } else {
       setTitle("My Resume");
-      setSummaryBody("");
+      setSummaryBody(options?.summaryOverride ?? "");
     }
     setIsEditing(true);
   }, []);
@@ -117,6 +141,56 @@ export default function ResumePage() {
       });
     } finally {
       setIsExportingPdf(false);
+    }
+  };
+
+  async function fetchTailorHistory(): Promise<TailorHistoryEntry[]> {
+    const res = await fetch("/api/ai/tailor/history");
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) return json.data;
+    return [];
+  }
+
+  const { data: tailorHistory = [], isLoading: tailorHistoryLoading, refetch: refetchTailorHistory } = useQuery({
+    queryKey: ["tailor-history"],
+    queryFn: fetchTailorHistory,
+    enabled: tailorOpen,
+    staleTime: 0,
+  });
+
+  const handleGetTailorSuggestions = async () => {
+    if (!resume || !jobDescriptionForTailor.trim()) return;
+    setIsTailoring(true);
+    setTailorResult(null);
+    try {
+      const res = await fetch("/api/ai/tailor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobDescription: jobDescriptionForTailor.trim(),
+          resumeContent: resume.content,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error ?? "Failed to get suggestions");
+      setTailorResult(data.data);
+      await refetchTailorHistory();
+    } catch (err) {
+      toast.error("Could not get suggestions", {
+        description: err instanceof Error ? err.message : "Something went wrong",
+      });
+    } finally {
+      setIsTailoring(false);
+    }
+  };
+
+  const handleApplyTailoredSummary = () => {
+    if (tailorResult?.tailoredSummary && resume) {
+      enterEditMode(resume, { summaryOverride: tailorResult.tailoredSummary });
+      setTailorOpen(false);
+      setTailorResult(null);
+      setJobDescriptionForTailor("");
+      toast.success("Summary applied. Edit and save when ready.");
     }
   };
 
@@ -291,6 +365,14 @@ export default function ResumePage() {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button
+          onClick={() => setTailorOpen(true)}
+          variant="outline"
+          className="gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          Tailor for a job
+        </Button>
+        <Button
           onClick={handleDownloadPdf}
           disabled={isExportingPdf}
           variant="outline"
@@ -307,6 +389,158 @@ export default function ResumePage() {
           Edit resume
         </Button>
       </div>
+
+      <Dialog open={tailorOpen} onOpenChange={(open) => {
+        setTailorOpen(open);
+        if (!open) {
+          setTailorResult(null);
+          setJobDescriptionForTailor("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
+            <DialogTitle>{tailorResult ? "Your suggestions" : "Tailor for a job"}</DialogTitle>
+            <DialogDescription>
+              {tailorResult
+                ? "Review the tailored summary and keywords below. Apply to your resume or get new suggestions."
+                : "Paste the job description below. We'll suggest a tailored summary and keywords."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2 space-y-4">
+            {tailorResult ? (
+              <>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm overflow-hidden">
+                  <div className="p-4 space-y-4">
+                    {tailorResult.tailoredSummary && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                          Suggested summary
+                        </h4>
+                        <p className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
+                          {tailorResult.tailoredSummary}
+                        </p>
+                      </div>
+                    )}
+                    {(tailorResult.keywords?.length ?? 0) > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                          Keywords to include
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(tailorResult.keywords ?? []).map((k) => (
+                            <span
+                              key={k}
+                              className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                            >
+                              {k}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(tailorResult.bulletSuggestions?.length ?? 0) > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                          Bullet ideas
+                        </h4>
+                        <ul className="space-y-1.5">
+                          {(tailorResult.bulletSuggestions ?? []).map((b, i) => (
+                            <li key={i} className="flex gap-2 text-sm text-[var(--foreground)]">
+                              <span className="text-[var(--primary)] mt-0.5">•</span>
+                              <span className="flex-1">{b}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="tailor-jd">Job description</Label>
+                <Textarea
+                  id="tailor-jd"
+                  placeholder="Paste the full job description here..."
+                  value={jobDescriptionForTailor}
+                  onChange={(e) => setJobDescriptionForTailor(e.target.value)}
+                  rows={5}
+                  className="resize-y max-h-[40vh]"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2 pt-2 border-t border-[var(--border)]">
+              <p className="text-xs font-medium text-[var(--muted-foreground)] flex items-center gap-1.5">
+                <History className="h-3.5 w-3.5" />
+                Previous responses
+              </p>
+              {tailorHistoryLoading ? (
+                <p className="text-sm text-[var(--muted-foreground)] flex items-center gap-2 py-2">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Loading…
+                </p>
+              ) : tailorHistory.length === 0 ? (
+                <p className="text-sm text-[var(--muted-foreground)] py-2">
+                  No previous responses yet. Your last 5 suggestions will appear here.
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {tailorHistory.map((entry) => {
+                    const preview = entry.jobDescriptionPreview.slice(0, 70).trim();
+                    const previewSuffix = preview.length >= 70 ? "…" : "";
+                    const date = new Date(entry.createdAt);
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    const timeLabel = isToday
+                      ? date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+                      : date.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+                    return (
+                      <li key={entry.id}>
+                        <button
+                          type="button"
+                          onClick={() => setTailorResult(entry.result)}
+                          className="w-full text-left rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm hover:bg-[var(--muted)]/50 hover:border-[var(--primary)]/30 transition-colors"
+                        >
+                          <span className="block text-[var(--muted-foreground)] text-xs mb-0.5">{timeLabel}</span>
+                          <span className="text-[var(--foreground)] line-clamp-2">{preview}{previewSuffix}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row px-6 pb-6 pt-2 border-t border-[var(--border)]">
+            {tailorResult ? (
+              <>
+                {tailorResult.tailoredSummary && (
+                  <Button onClick={handleApplyTailoredSummary} className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Apply to summary
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setTailorResult(null)}>
+                  Get new suggestions
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={handleGetTailorSuggestions}
+                disabled={isTailoring || !jobDescriptionForTailor.trim()}
+                className="gap-2"
+              >
+                {isTailoring ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                Get suggestions
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

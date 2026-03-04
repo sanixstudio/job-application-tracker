@@ -15,6 +15,13 @@
       "when": 1772643687755,
       "tag": "0001_resumes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730650000000,
+      "tag": "0002_tailor_history",
+      "breakpoints": true
     }
   ]
 }
