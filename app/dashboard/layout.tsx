@@ -23,13 +23,27 @@ export default function DashboardLayout({
             </span>
             Trackr
           </Link>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/dashboard/resume"
+              className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            >
+              Resume
+            </Link>
             <Link
               href="/"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Home
             </Link>
+          </nav>
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             <UserButton
               appearance={{

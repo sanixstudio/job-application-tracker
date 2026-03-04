@@ -63,3 +63,55 @@ export interface JobFormData {
   salaryRange?: string;
   location?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Resume (v1) — shared by API, UI, and DB schema
+// ---------------------------------------------------------------------------
+
+export type ResumeSectionType =
+  | "summary"
+  | "experience"
+  | "education"
+  | "skills"
+  | "projects";
+
+export interface ResumeExperienceItem {
+  title: string;
+  company: string;
+  dates: string;
+  description: string;
+}
+
+export interface ResumeSection {
+  id: string;
+  type: ResumeSectionType;
+  heading: string;
+  body?: string;
+  items?: Array<Record<string, string>>;
+}
+
+/** Resume content stored in DB as JSONB. */
+export interface ResumeContent {
+  sections?: ResumeSection[];
+}
+
+export interface Resume {
+  id: string;
+  userId: string;
+  title: string;
+  content: ResumeContent;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** API body: create resume (POST). */
+export interface CreateResumeInput {
+  title?: string;
+  content?: ResumeContent;
+}
+
+/** API body: update resume (PUT). */
+export interface UpdateResumeInput {
+  title?: string;
+  content?: ResumeContent;
+}

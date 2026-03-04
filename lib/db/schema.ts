@@ -4,8 +4,9 @@ import {
   timestamp,
   boolean,
   index,
+  jsonb,
 } from "drizzle-orm/pg-core";
-import type { ApplicationStatus, JobSource } from "@/types";
+import type { ApplicationStatus, JobSource, ResumeContent } from "@/types";
 
 /**
  * Database schema for the Job Application Tracker.
@@ -71,3 +72,16 @@ export const userSettings = pgTable("user_settings", {
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });
+
+export const resumes = pgTable(
+  "resumes",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    title: text("title").notNull().default("My Resume"),
+    content: jsonb("content").$type<ResumeContent>().notNull().default({ sections: [] }),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [index("idx_resumes_user_id").on(table.userId)]
+);
