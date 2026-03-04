@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { JobCard } from "./JobCard";
 import { JobForm } from "./JobForm";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Check } from "lucide-react";
 import type { ApplicationStatus } from "@/types";
 
@@ -70,6 +79,7 @@ export function JobList() {
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Application | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<Application | null>(null);
   const queryClient = useQueryClient();
 
   const { data: jobs, isLoading, error } = useQuery({
@@ -81,6 +91,10 @@ export function JobList() {
     mutationFn: createJob,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Application added");
+    },
+    onError: (err) => {
+      toast.error("Could not add application", { description: err.message });
     },
   });
 
@@ -89,6 +103,10 @@ export function JobList() {
       updateJob(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Application updated");
+    },
+    onError: (err) => {
+      toast.error("Could not update application", { description: err.message });
     },
   });
 
@@ -96,15 +114,23 @@ export function JobList() {
     mutationFn: deleteJob,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Application removed");
+    },
+    onError: (err) => {
+      toast.error("Could not remove application", { description: err.message });
     },
   });
 
   const handleSubmit = async (data: JobFormData) => {
-    if (editingJob) {
-      await updateMutation.mutateAsync({ id: editingJob.id, data });
-      setEditingJob(null);
-    } else {
-      await createMutation.mutateAsync(data);
+    try {
+      if (editingJob) {
+        await updateMutation.mutateAsync({ id: editingJob.id, data });
+        setEditingJob(null);
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+    } catch {
+      // Error already shown via mutation onError toast
     }
   };
 
@@ -113,9 +139,15 @@ export function JobList() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this job application?")) {
-      await deleteMutation.mutateAsync(id);
+  const handleDeleteClick = (id: string) => {
+    const job = jobs?.find((j) => j.id === id);
+    if (job) setJobToDelete(job);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (jobToDelete) {
+      deleteMutation.mutate(jobToDelete.id);
+      setJobToDelete(null);
     }
   };
 
@@ -196,7 +228,7 @@ export function JobList() {
                   key={job.id}
                   job={job}
                   onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onDelete={handleDeleteClick}
                 />
               ))}
             </div>
@@ -213,6 +245,44 @@ export function JobList() {
         onSubmit={handleSubmit}
         initialData={editingJob}
       />
+
+      <AlertDialog open={!!jobToDelete} onOpenChange={(open) => !open && setJobToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove{" "}
+              <span className="font-medium text-[var(--foreground)]">
+                {jobToDelete?.jobTitle}
+              </span>{" "}
+              at {jobToDelete?.companyName}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              disabled={deleteMutation.isPending}
+              onClick={() => setJobToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={handleDeleteConfirm}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
