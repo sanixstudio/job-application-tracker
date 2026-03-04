@@ -24,6 +24,7 @@
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "googleapis": "^171.4.0",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.563.0",
     "nanoid": "^5.1.6",
     "next": "16.1.6",

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download } from "lucide-react";
 import { useState, useCallback } from "react";
 import type { Resume, ResumeContent, ResumeSection } from "@/types";
 
@@ -46,6 +46,7 @@ export default function ResumePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [summaryBody, setSummaryBody] = useState("");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const { data: resume, isLoading, error } = useQuery({
     queryKey: ["resume"],
@@ -91,6 +92,32 @@ export default function ResumePage() {
 
   const handleCreate = () => {
     createMutation.mutate();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!resume) return;
+    setIsExportingPdf(true);
+    try {
+      const res = await fetch(`/api/resumes/${resume.id}/export?format=pdf`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Export failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${resume.title.replace(/[^a-z0-9-_]/gi, "_") || "resume"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
+    } catch (err) {
+      toast.error("Could not download PDF", {
+        description: err instanceof Error ? err.message : "Export failed",
+      });
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -262,9 +289,24 @@ export default function ResumePage() {
           )}
         </CardContent>
       </Card>
-      <Button onClick={() => enterEditMode(resume)} variant="outline" className="gap-2">
-        Edit resume
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={handleDownloadPdf}
+          disabled={isExportingPdf}
+          variant="outline"
+          className="gap-2"
+        >
+          {isExportingPdf ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          Download PDF
+        </Button>
+        <Button onClick={() => enterEditMode(resume)} variant="outline" className="gap-2">
+          Edit resume
+        </Button>
+      </div>
     </div>
   );
 }
