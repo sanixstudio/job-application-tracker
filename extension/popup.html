@@ -7,29 +7,27 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      width: 320px;
+      width: 340px;
       margin: 0;
-      padding: 12px;
+      padding: 14px;
       font-family: system-ui, -apple-system, sans-serif;
       font-size: 13px;
       color: #1a1a1a;
     }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 16px;
-      font-weight: 600;
-    }
+    h1 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+    .subtitle { font-size: 12px; color: #64748b; margin-bottom: 12px; }
     label { display: block; margin-bottom: 4px; font-weight: 500; color: #444; }
-    input, textarea {
+    input {
       width: 100%;
       padding: 8px 10px;
       margin-bottom: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid #d1d5db;
       border-radius: 6px;
       font-size: 13px;
     }
-    input:read-only, textarea:read-only { background: #f5f5f5; color: #555; }
-    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15); }
+    input:read-only { background: #f8fafc; color: #475569; cursor: default; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
     button {
       padding: 8px 14px;
       border: none;
@@ -38,63 +36,95 @@
       font-weight: 500;
       cursor: pointer;
     }
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-    }
+    .btn-primary { background: #2563eb; color: white; }
     .btn-primary:hover { background: #1d4ed8; }
     .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-secondary {
-      background: #f1f5f9;
-      color: #475569;
-    }
+    .btn-secondary { background: #f1f5f9; color: #475569; }
     .btn-secondary:hover { background: #e2e8f0; }
-    .message {
-      margin-top: 10px;
+    .btn-text { background: none; color: #2563eb; padding: 4px 8px; }
+    .btn-text:hover { text-decoration: underline; }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .card.highlight { background: #eff6ff; border-color: #bfdbfe; }
+    .banner {
       padding: 8px 10px;
       border-radius: 6px;
       font-size: 12px;
+      margin-bottom: 10px;
     }
+    .banner.info { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .banner.success { background: #dcfce7; color: #166534; }
+    .message { margin-top: 10px; padding: 8px 10px; border-radius: 6px; font-size: 12px; }
     .message.success { background: #dcfce7; color: #166534; }
     .message.error { background: #fee2e2; color: #991b1b; }
-    .key-status { font-size: 12px; color: #64748b; margin-bottom: 8px; }
-    .key-status.saved { color: #16a34a; }
     a { color: #2563eb; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    .signed-in-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; background: #dcfce7; color: #166534;
+      border-radius: 6px; margin-bottom: 12px; font-size: 12px;
+    }
+    .section { margin-bottom: 14px; }
+    .section-header { font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+    #signInSection.hidden, #signedInBar.hidden, #saveSection.hidden { display: none !important; }
+    #loadingState { text-align: center; padding: 20px; color: #64748b; font-size: 13px; }
   </style>
 </head>
 <body>
-  <h1>Save to Trackr</h1>
+  <div id="loadingState">Checking sign-in…</div>
 
-  <div id="keySection">
-    <div id="keyStatus" class="key-status">No API key saved. Paste your key from the Trackr dashboard.</div>
-    <label for="trackrUrl">Trackr URL</label>
-    <input type="text" id="trackrUrl" placeholder="http://localhost:3000" />
-    <label for="apiKey">API key</label>
-    <input type="password" id="apiKey" placeholder="Paste key from Dashboard → Save from browser" />
-    <div class="row">
-      <button type="button" id="saveKeyBtn" class="btn-primary">Save key</button>
-      <button type="button" id="clearKeyBtn" class="btn-secondary">Clear</button>
+  <div id="mainContent" class="hidden">
+    <h1>Trackr</h1>
+    <p class="subtitle">Save jobs from any tab to your dashboard.</p>
+
+    <!-- Sign-in card: shown when signed out -->
+    <section id="signInSection" class="section card highlight" aria-label="Sign in to Trackr">
+      <div class="section-header">Sign in to Trackr</div>
+      <p style="margin: 0 0 10px; font-size: 12px; color: #475569;">
+        Open Trackr in your browser, sign in, then generate an API key and paste it below.
+      </p>
+      <a href="#" id="openTrackrGetKeyLink" target="_blank" rel="noopener" style="font-size: 12px;">Open Trackr to get your API key →</a>
+      <label for="trackrUrl" style="margin-top: 10px;">Trackr URL</label>
+      <input type="text" id="trackrUrl" placeholder="http://localhost:3000" />
+      <label for="apiKey">API key</label>
+      <input type="password" id="apiKey" placeholder="Paste your API key from the dashboard" autocomplete="off" />
+      <div class="row">
+        <button type="button" id="signInBtn" class="btn-primary">Sign in</button>
+      </div>
+    </section>
+
+    <!-- Signed-in bar: shown when signed in -->
+    <div id="signedInBar" class="signed-in-bar hidden">
+      <span>Signed in to Trackr</span>
+      <button type="button" id="signOutBtn" class="btn-text">Sign out</button>
     </div>
+
+    <!-- Save job form -->
+    <section id="saveSection" class="section" aria-label="Save this job">
+      <div id="signInPrompt" class="banner info hidden">
+        Sign in above to save jobs to your Trackr dashboard.
+      </div>
+      <label for="jobUrl">Job URL</label>
+      <input type="url" id="jobUrl" placeholder="From current tab" readonly />
+      <label for="jobTitle">Job title</label>
+      <input type="text" id="jobTitle" placeholder="e.g. Senior Engineer" />
+      <label for="companyName">Company</label>
+      <input type="text" id="companyName" placeholder="e.g. Acme Inc" />
+      <div class="row">
+        <button type="button" id="saveJobBtn" class="btn-primary">Save to Trackr</button>
+      </div>
+      <p style="margin: 10px 0 0; font-size: 12px;">
+        <a href="#" id="openTrackrLink" target="_blank" rel="noopener">Open Trackr</a>
+      </p>
+    </section>
+
+    <div id="message" class="message hidden"></div>
   </div>
-
-  <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;" />
-
-  <label for="jobUrl">Job URL</label>
-  <input type="url" id="jobUrl" placeholder="From current tab" readOnly />
-  <label for="jobTitle">Job title</label>
-  <input type="text" id="jobTitle" placeholder="e.g. Senior Engineer" />
-  <label for="companyName">Company</label>
-  <input type="text" id="companyName" placeholder="e.g. Acme Inc" />
-
-  <div class="row">
-    <button type="button" id="saveJobBtn" class="btn-primary">Save to Trackr</button>
-  </div>
-  <p style="margin: 10px 0 0; font-size: 12px;">
-    <a href="#" id="openTrackrLink" target="_blank" rel="noopener">Open Trackr</a>
-  </p>
-
-  <div id="message" class="message" style="display: none;"></div>
 
   <script src="popup.js"></script>
 </body>

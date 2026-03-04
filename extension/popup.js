@@ -1,16 +1,23 @@
 /**
- * Trackr Chrome extension popup script.
- * Loads/saves API key and Trackr URL, fills job URL from active tab, sends save request.
+ * Trackr Chrome extension popup.
+ * Verifies sign-in state via GET /api/ext/me, shows sign-in prompt when signed out,
+ * and saves jobs when signed in. Handles 401 by clearing key and prompting sign-in again.
  */
 
 const DEFAULT_TRACKR_URL = "http://localhost:3000";
 const STORAGE_KEYS = { apiKey: "trackr_api_key", trackrUrl: "trackr_url" };
 
+const loadingEl = document.getElementById("loadingState");
+const mainContent = document.getElementById("mainContent");
+const signInSection = document.getElementById("signInSection");
+const signedInBar = document.getElementById("signedInBar");
+const saveSection = document.getElementById("saveSection");
+const signInPrompt = document.getElementById("signInPrompt");
 const trackrUrlEl = document.getElementById("trackrUrl");
 const apiKeyEl = document.getElementById("apiKey");
-const saveKeyBtn = document.getElementById("saveKeyBtn");
-const clearKeyBtn = document.getElementById("clearKeyBtn");
-const keyStatusEl = document.getElementById("keyStatus");
+const signInBtn = document.getElementById("signInBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+const openTrackrGetKeyLink = document.getElementById("openTrackrGetKeyLink");
 const jobUrlEl = document.getElementById("jobUrl");
 const jobTitleEl = document.getElementById("jobTitle");
 const companyNameEl = document.getElementById("companyName");
@@ -18,40 +25,57 @@ const saveJobBtn = document.getElementById("saveJobBtn");
 const openTrackrLink = document.getElementById("openTrackrLink");
 const messageEl = document.getElementById("message");
 
+let signedIn = false;
+
 function showMessage(text, type) {
   messageEl.textContent = text;
   messageEl.className = "message " + (type === "error" ? "error" : "success");
-  messageEl.style.display = "block";
+  messageEl.classList.remove("hidden");
 }
 
 function hideMessage() {
-  messageEl.style.display = "none";
+  messageEl.classList.add("hidden");
 }
 
-function setKeySaved(hasKey) {
-  if (hasKey) {
-    keyStatusEl.textContent = "API key saved.";
-    keyStatusEl.classList.add("saved");
-    apiKeyEl.placeholder = "••••••••••••";
-    apiKeyEl.value = "";
-  } else {
-    keyStatusEl.textContent = "No API key saved. Paste your key from the Trackr dashboard.";
-    keyStatusEl.classList.remove("saved");
-    apiKeyEl.placeholder = "Paste key from Dashboard → Save from browser";
+function setSignedIn(value) {
+  signedIn = !!value;
+  signInSection.classList.toggle("hidden", signedIn);
+  signedInBar.classList.toggle("hidden", !signedIn);
+  signInPrompt.classList.toggle("hidden", signedIn);
+  saveJobBtn.disabled = false;
+}
+
+function getTrackrUrl() {
+  return (trackrUrlEl.value || DEFAULT_TRACKR_URL).replace(/\/$/, "");
+}
+
+/**
+ * Verify API key with the backend. Returns true if valid, false otherwise.
+ */
+async function verifySession(apiKey, baseUrl) {
+  if (!apiKey || !baseUrl) return false;
+  try {
+    const res = await fetch(baseUrl + "/api/ext/me", {
+      method: "GET",
+      headers: { "X-Trackr-API-Key": apiKey },
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 
-async function loadStored() {
-  const out = await chrome.storage.local.get([STORAGE_KEYS.apiKey, STORAGE_KEYS.trackrUrl]);
-  const url = out[STORAGE_KEYS.trackrUrl] || DEFAULT_TRACKR_URL;
-  const key = out[STORAGE_KEYS.apiKey] || "";
-  trackrUrlEl.value = url.replace(/\/$/, "");
-  if (key) {
-    setKeySaved(true);
-  } else {
-    setKeySaved(false);
-  }
-  openTrackrLink.href = url;
+/**
+ * Clear stored key and show sign-in state. Call after 401 or sign out.
+ */
+async function clearSession() {
+  await chrome.storage.local.remove([STORAGE_KEYS.apiKey, STORAGE_KEYS.trackrUrl]);
+  trackrUrlEl.value = DEFAULT_TRACKR_URL;
+  apiKeyEl.value = "";
+  apiKeyEl.placeholder = "Paste your API key from the dashboard";
+  setSignedIn(false);
+  openTrackrLink.href = DEFAULT_TRACKR_URL;
+  openTrackrGetKeyLink.href = DEFAULT_TRACKR_URL + "/dashboard";
 }
 
 async function getActiveTabUrl() {
@@ -62,40 +86,59 @@ async function getActiveTabUrl() {
   return "";
 }
 
-function getTrackrUrl() {
-  return (trackrUrlEl.value || DEFAULT_TRACKR_URL).replace(/\/$/, "");
-}
-
-saveKeyBtn.addEventListener("click", async () => {
+// --- Sign in
+signInBtn.addEventListener("click", async () => {
   const key = apiKeyEl.value.trim();
   const url = getTrackrUrl();
   if (!key) {
     showMessage("Enter your API key from the Trackr dashboard.", "error");
     return;
   }
+  hideMessage();
+
+  signInBtn.disabled = true;
+  const valid = await verifySession(key, url);
+  signInBtn.disabled = false;
+
+  if (!valid) {
+    showMessage("Invalid API key or Trackr unreachable. Check the URL and key.", "error");
+    return;
+  }
+
   await chrome.storage.local.set({
     [STORAGE_KEYS.apiKey]: key,
     [STORAGE_KEYS.trackrUrl]: url,
   });
-  setKeySaved(true);
   openTrackrLink.href = url;
-  showMessage("Key and URL saved.", "success");
+  openTrackrGetKeyLink.href = url + "/dashboard";
+  setSignedIn(true);
+  showMessage("You're signed in.", "success");
 });
 
-clearKeyBtn.addEventListener("click", async () => {
-  await chrome.storage.local.remove([STORAGE_KEYS.apiKey, STORAGE_KEYS.trackrUrl]);
-  trackrUrlEl.value = DEFAULT_TRACKR_URL;
-  setKeySaved(false);
-  openTrackrLink.href = DEFAULT_TRACKR_URL;
+// --- Sign out
+signOutBtn.addEventListener("click", async () => {
   hideMessage();
+  await clearSession();
 });
 
+// --- Save job
 saveJobBtn.addEventListener("click", async () => {
   hideMessage();
-  const out = await chrome.storage.local.get(STORAGE_KEYS.apiKey);
+
+  if (!signedIn) {
+    showMessage("Please sign in to Trackr to save jobs.", "error");
+    signInSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+
+  const out = await chrome.storage.local.get([STORAGE_KEYS.apiKey, STORAGE_KEYS.trackrUrl]);
   const apiKey = out[STORAGE_KEYS.apiKey];
+  const baseUrl = out[STORAGE_KEYS.trackrUrl] || getTrackrUrl();
+
   if (!apiKey) {
-    showMessage("Save your API key first (from Trackr dashboard).", "error");
+    setSignedIn(false);
+    showMessage("Please sign in to Trackr to save jobs.", "error");
+    signInSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
     return;
   }
 
@@ -116,10 +159,9 @@ saveJobBtn.addEventListener("click", async () => {
     return;
   }
 
-  const baseUrl = getTrackrUrl();
-  const saveUrl = baseUrl + "/api/ext/save";
-
+  const saveUrl = baseUrl.replace(/\/$/, "") + "/api/ext/save";
   saveJobBtn.disabled = true;
+
   try {
     const res = await fetch(saveUrl, {
       method: "POST",
@@ -127,11 +169,7 @@ saveJobBtn.addEventListener("click", async () => {
         "Content-Type": "application/json",
         "X-Trackr-API-Key": apiKey,
       },
-      body: JSON.stringify({
-        jobTitle,
-        companyName,
-        jobUrl,
-      }),
+      body: JSON.stringify({ jobTitle, companyName, jobUrl }),
     });
     const data = await res.json().catch(() => ({}));
 
@@ -139,20 +177,43 @@ saveJobBtn.addEventListener("click", async () => {
       showMessage("Saved to Trackr.", "success");
       jobTitleEl.value = "";
       companyNameEl.value = "";
+    } else if (res.status === 401) {
+      await clearSession();
+      showMessage("Your session expired or key is invalid. Please sign in again.", "error");
+      signInSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else {
-      const msg = data.error || "Failed to save.";
-      showMessage(msg, "error");
+      showMessage(data.error || "Failed to save.", "error");
     }
-  } catch (err) {
+  } catch {
     showMessage("Network error. Is Trackr running at " + baseUrl + "?", "error");
   } finally {
     saveJobBtn.disabled = false;
   }
 });
 
-// Load storage and active tab URL on open
+// --- Init: load storage, verify key, show UI
 (async () => {
-  await loadStored();
-  const url = await getActiveTabUrl();
-  jobUrlEl.value = url;
+  const stored = await chrome.storage.local.get([STORAGE_KEYS.apiKey, STORAGE_KEYS.trackrUrl]);
+  const url = (stored[STORAGE_KEYS.trackrUrl] || DEFAULT_TRACKR_URL).replace(/\/$/, "");
+  const key = stored[STORAGE_KEYS.apiKey] || "";
+
+  trackrUrlEl.value = url;
+  openTrackrLink.href = url;
+  openTrackrGetKeyLink.href = url + "/dashboard";
+
+  jobUrlEl.value = await getActiveTabUrl();
+
+  if (key) {
+    const valid = await verifySession(key, url);
+    if (!valid) {
+      await chrome.storage.local.remove(STORAGE_KEYS.apiKey);
+      apiKeyEl.placeholder = "Paste your API key from the dashboard";
+    }
+    setSignedIn(valid);
+  } else {
+    setSignedIn(false);
+  }
+
+  loadingEl.classList.add("hidden");
+  mainContent.classList.remove("hidden");
 })();
