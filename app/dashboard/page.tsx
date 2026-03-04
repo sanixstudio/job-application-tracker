@@ -19,13 +19,13 @@ export default async function DashboardPage() {
   const stats = await getStats(userId);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+    <div className="space-y-10">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
           Dashboard
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] mt-1">
-          Track and manage your job applications
+        <p className="text-base text-[var(--muted-foreground)]">
+          Track and manage your job applications in one place.
         </p>
       </div>
 

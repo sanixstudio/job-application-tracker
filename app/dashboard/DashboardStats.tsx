@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, CheckCircle2, Clock, XCircle, Trophy } from "lucide-react";
 
 interface DashboardStatsProps {
@@ -13,71 +13,83 @@ interface DashboardStatsProps {
   };
 }
 
+const statConfig = [
+  {
+    title: "Total",
+    valueKey: "total" as const,
+    icon: Briefcase,
+    iconBg: "bg-[var(--muted)]",
+    iconColor: "text-[var(--muted-foreground)]",
+    cardAccent: "",
+  },
+  {
+    title: "Applied",
+    valueKey: "applied" as const,
+    icon: Clock,
+    iconBg: "bg-[var(--status-applied)]/15",
+    iconColor: "text-[var(--status-applied)]",
+    cardAccent: "border-l-4 border-l-[var(--status-applied)]",
+  },
+  {
+    title: "Interviews",
+    valueKey: "interviews" as const,
+    icon: CheckCircle2,
+    iconBg: "bg-[var(--status-interview)]/15",
+    iconColor: "text-[var(--status-interview)]",
+    cardAccent: "border-l-4 border-l-[var(--status-interview)]",
+  },
+  {
+    title: "Offers",
+    valueKey: "offers" as const,
+    icon: Trophy,
+    iconBg: "bg-[var(--status-offer)]/15",
+    iconColor: "text-[var(--status-offer)]",
+    cardAccent: "border-l-4 border-l-[var(--status-offer)]",
+  },
+  {
+    title: "Rejected",
+    valueKey: "rejected" as const,
+    icon: XCircle,
+    iconBg: "bg-[var(--status-rejected)]/15",
+    iconColor: "text-[var(--status-rejected)]",
+    cardAccent: "border-l-4 border-l-[var(--status-rejected)]",
+  },
+];
+
 /**
- * Stats cards with semantic color — guides the user: Total (neutral), Applied (info),
- * Interviews (progress), Offers (success), Rejected (attention).
+ * Dashboard stat cards — clear hierarchy: large icon, prominent value, label.
+ * Semantic colors guide the user through the pipeline.
  */
 export function DashboardStats({ stats }: DashboardStatsProps) {
-  const cards = [
-    {
-      title: "Total",
-      value: stats.total,
-      icon: Briefcase,
-      accent: "",
-      iconColor: "text-[var(--muted-foreground)]",
-    },
-    {
-      title: "Applied",
-      value: stats.applied,
-      icon: Clock,
-      accent: "border-l-[3px] border-l-[var(--status-applied)] bg-[var(--status-applied-muted)]/50",
-      iconColor: "text-[var(--status-applied)]",
-    },
-    {
-      title: "Interviews",
-      value: stats.interviews,
-      icon: CheckCircle2,
-      accent: "border-l-[3px] border-l-[var(--status-interview)] bg-[var(--status-interview-muted)]/50",
-      iconColor: "text-[var(--status-interview)]",
-    },
-    {
-      title: "Offers",
-      value: stats.offers,
-      icon: Trophy,
-      accent: "border-l-[3px] border-l-[var(--status-offer)] bg-[var(--status-offer-muted)]/50",
-      iconColor: "text-[var(--status-offer)]",
-    },
-    {
-      title: "Rejected",
-      value: stats.rejected,
-      icon: XCircle,
-      accent: "border-l-[3px] border-l-[var(--status-rejected)] bg-[var(--status-rejected-muted)]/50",
-      iconColor: "text-[var(--status-rejected)]",
-    },
-  ];
-
   return (
     <section
       aria-label="Application pipeline summary"
-      className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5"
+      className="grid gap-4 sm:gap-5 grid-cols-2 lg:grid-cols-5"
     >
-      {cards.map(({ title, value, icon: Icon, accent, iconColor }) => (
+      {statConfig.map(({ title, valueKey, icon: Icon, iconBg, iconColor, cardAccent }) => (
         <Card
           key={title}
           role="group"
-          aria-label={`${title}: ${value}`}
-          className={`rounded-xl border-[var(--border)] bg-[var(--card)] ${accent}`}
+          aria-label={`${title}: ${stats[valueKey]}`}
+          className={`rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md hover:border-[var(--border)]/80 ${cardAccent}`}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 pt-4">
-            <CardTitle className="text-sm font-medium tracking-tight text-[var(--stat-label)]">
-              {title}
-            </CardTitle>
-            <Icon className={`h-4 w-4 ${iconColor}`} aria-hidden />
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-semibold tabular-nums tracking-tight text-[var(--stat-value)]">
-              {value}
-            </p>
+          <CardContent className="p-5 flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <span
+                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
+                aria-hidden
+              >
+                <Icon className="size-7" strokeWidth={1.75} />
+              </span>
+            </div>
+            <div className="space-y-0.5 min-w-0">
+              <p className="text-sm font-medium text-[var(--stat-label)] tracking-tight">
+                {title}
+              </p>
+              <p className="text-3xl font-bold tabular-nums tracking-tight text-[var(--stat-value)]">
+                {stats[valueKey]}
+              </p>
+            </div>
           </CardContent>
         </Card>
       ))}

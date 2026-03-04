@@ -62,21 +62,20 @@ export default async function LandingPage() {
 
       {/* Hero */}
       <main className="flex-1">
-        <section className="container mx-auto px-4 py-20 md:py-28 lg:py-36">
-          <div className="mx-auto max-w-3xl text-center space-y-8">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-clip-text text-[var(--foreground)]">
+        <section className="container mx-auto px-4 py-24 md:py-32 lg:py-40">
+          <div className="mx-auto max-w-3xl text-center space-y-10">
+            <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl lg:text-7xl">
               Never lose track of a job application again
             </h1>
             <p className="text-lg md:text-xl text-[var(--muted-foreground)] max-w-2xl mx-auto leading-relaxed">
-              One place to track applications, interviews, and offers. Add jobs
-              manually, update status in a click, and see your pipeline at a
-              glance.
+              One place to track applications, interviews, and offers. Update
+              status in one click and see your pipeline at a glance.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
               <Button
                 asChild
                 size="lg"
-                className="gap-2 text-base px-8 shadow-md ring-2 ring-[var(--primary)]/20"
+                className="gap-2 text-base px-8 shadow-lg shadow-[var(--primary)]/20 hover:shadow-xl hover:shadow-[var(--primary)]/25 transition-shadow"
               >
                 <Link href="/dashboard">
                   {userId ? "Go to dashboard" : "Start tracking"}
@@ -85,7 +84,7 @@ export default async function LandingPage() {
               </Button>
               {!userId && (
                 <SignInButton mode="modal">
-                  <Button variant="outline" size="lg" className="gap-2 text-base">
+                  <Button variant="outline" size="lg" className="gap-2 text-base border-2">
                     Sign in
                   </Button>
                 </SignInButton>
@@ -95,16 +94,15 @@ export default async function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="border-t border-[var(--border)] bg-[var(--muted)]/30 py-20 md:py-28">
+        <section className="border-t border-[var(--border)] bg-[var(--muted)]/40 py-24 md:py-32">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-semibold text-center mb-4">
+            <h2 className="text-2xl font-bold text-[var(--foreground)] text-center sm:text-3xl mb-3">
               Everything you need to stay on top of your job search
             </h2>
-            <p className="text-[var(--muted-foreground)] text-center max-w-xl mx-auto mb-14">
-              Built for developers and job seekers who want clarity without the
-              clutter.
+            <p className="text-[var(--muted-foreground)] text-center max-w-xl mx-auto mb-16">
+              Built for developers and job seekers who want clarity without the clutter.
             </p>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
               <FeatureCard
                 icon={<LayoutDashboard className="h-5 w-5" />}
                 title="Single dashboard"
@@ -130,17 +128,17 @@ export default async function LandingPage() {
         </section>
 
         {/* CTA */}
-        <section className="container mx-auto px-4 py-20 md:py-28">
-          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-[var(--border)] bg-[var(--card)] p-10 md:p-14 shadow-sm border-l-4 border-l-[var(--primary)]">
-            <h2 className="text-2xl font-semibold mb-3">
+        <section className="container mx-auto px-4 py-24 md:py-32">
+          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-[var(--border)] bg-[var(--card)] p-12 md:p-16 shadow-lg border-l-4 border-l-[var(--primary)]">
+            <h2 className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl mb-3">
               Ready to organize your job search?
             </h2>
-            <p className="text-[var(--muted-foreground)] mb-8">
+            <p className="text-[var(--muted-foreground)] mb-10">
               {userId
                 ? "Head to your dashboard to manage your applications."
                 : "Create a free account and start tracking in under a minute."}
             </p>
-            <Button asChild size="lg" className="gap-2 shadow-sm">
+            <Button asChild size="lg" className="gap-2 shadow-md">
               <Link href="/dashboard">
                 Go to dashboard
                 <ArrowRight className="h-4 w-4" />
@@ -150,10 +148,9 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[var(--border)] py-8">
+      <footer className="border-t border-[var(--border)] py-10">
         <div className="container mx-auto px-4 text-center text-sm text-[var(--muted-foreground)]">
-          © {new Date().getFullYear()} Trackr. Job application tracking made
-          simple.
+          © {new Date().getFullYear()} Trackr. Job application tracking made simple.
         </div>
       </footer>
     </div>
@@ -170,9 +167,11 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 text-left shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-3 text-[var(--primary)]">{icon}</div>
-      <h3 className="font-semibold mb-2">{title}</h3>
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-left shadow-sm transition-all duration-200 hover:shadow-md">
+      <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)]">
+        {icon}
+      </div>
+      <h3 className="font-semibold text-[var(--foreground)] mb-2">{title}</h3>
       <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
         {description}
       </p>

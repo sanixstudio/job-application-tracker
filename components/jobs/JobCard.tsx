@@ -1,15 +1,21 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Application } from "@/types";
+import type { Application, ApplicationStatus } from "@/types";
 import { format } from "date-fns";
 import { ExternalLink, MapPin, DollarSign, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
@@ -17,20 +23,11 @@ interface JobCardProps {
   job: Application;
   onEdit?: (job: Application) => void;
   onDelete?: (id: string) => void;
+  onStatusChange?: (id: string, status: ApplicationStatus) => void;
+  isUpdatingStatus?: boolean;
 }
 
-/* Semantic status colors — same tokens as dashboard for consistency */
-const statusBadgeClasses: Record<Application["status"], string> = {
-  applied: "bg-[var(--status-applied)] text-white border-0",
-  interview_1: "bg-[var(--status-interview)] text-white border-0",
-  interview_2: "bg-[var(--status-interview)] text-white border-0 opacity-90",
-  interview_3: "bg-[var(--status-interview)] text-white border-0 opacity-80",
-  offer: "bg-[var(--status-offer)] text-white border-0",
-  rejected: "bg-[var(--status-rejected)] text-white border-0",
-  withdrawn: "bg-[var(--status-withdrawn)] text-[var(--foreground)] border border-[var(--border)]",
-};
-
-const statusLabels: Record<Application["status"], string> = {
+const statusLabels: Record<ApplicationStatus, string> = {
   applied: "Applied",
   interview_1: "Interview 1",
   interview_2: "Interview 2",
@@ -40,9 +37,30 @@ const statusLabels: Record<Application["status"], string> = {
   withdrawn: "Withdrawn",
 };
 
-export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
+/** Badge background when status is read-only (no onStatusChange) */
+const statusBadgeBg: Record<ApplicationStatus, string> = {
+  applied: "bg-[var(--status-applied)] text-white",
+  interview_1: "bg-[var(--status-interview)] text-white",
+  interview_2: "bg-[var(--status-interview)] text-white opacity-90",
+  interview_3: "bg-[var(--status-interview)] text-white opacity-80",
+  offer: "bg-[var(--status-offer)] text-white",
+  rejected: "bg-[var(--status-rejected)] text-white",
+  withdrawn: "bg-[var(--status-withdrawn)] text-[var(--foreground)] border border-[var(--border)]",
+};
+
+const STATUS_OPTIONS: ApplicationStatus[] = [
+  "applied",
+  "interview_1",
+  "interview_2",
+  "interview_3",
+  "offer",
+  "rejected",
+  "withdrawn",
+];
+
+export function JobCard({ job, onEdit, onDelete, onStatusChange, isUpdatingStatus }: JobCardProps) {
   return (
-    <Card className="rounded-xl border-[var(--border)] transition-shadow hover:shadow-md">
+    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1">
@@ -54,21 +72,39 @@ export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Badge
-              className={statusBadgeClasses[job.status]}
-              variant="default"
-            >
-              {statusLabels[job.status]}
-            </Badge>
+            {onStatusChange ? (
+              <Select
+                value={job.status}
+                onValueChange={(value) => onStatusChange(job.id, value as ApplicationStatus)}
+                disabled={isUpdatingStatus}
+              >
+                <SelectTrigger className="h-8 min-w-[120px] border-[var(--border)] bg-[var(--card)] text-xs font-medium">
+                  <SelectValue>{statusLabels[job.status]}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {statusLabels[status]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <span
+                className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ${statusBadgeBg[job.status]}`}
+              >
+                {statusLabels[job.status]}
+              </span>
+            )}
             {(onEdit || onDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">Actions</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[140px]">
+                <DropdownMenuContent align="end" className="min-w-[160px]">
                   {onEdit && (
                     <DropdownMenuItem onClick={() => onEdit(job)}>
                       <Pencil className="h-4 w-4 mr-2" />

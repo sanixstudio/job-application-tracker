@@ -151,15 +151,21 @@ export function JobList() {
     }
   };
 
+  const handleStatusChange = (id: string, status: ApplicationStatus) => {
+    updateMutation.mutate({ id, data: { status } });
+  };
+
   const filterLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "Filter";
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Applications</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
+            Applications
+          </h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-            Track and manage your job applications
+            Update status in one click and keep your pipeline moving.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -196,15 +202,35 @@ export function JobList() {
       </div>
 
       {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card
+              key={i}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--card)] overflow-hidden"
+            >
+              <div className="p-5 space-y-4">
+                <div className="flex justify-between gap-2">
+                  <div className="h-5 flex-1 max-w-[70%] rounded-md bg-[var(--muted)] animate-pulse" />
+                  <div className="h-8 w-24 rounded-md bg-[var(--muted)] animate-pulse shrink-0" />
+                </div>
+                <div className="h-4 w-3/4 rounded-md bg-[var(--muted)] animate-pulse" />
+                <div className="flex gap-2 pt-2">
+                  <div className="h-9 w-24 rounded-md bg-[var(--muted)] animate-pulse" />
+                  <div className="h-9 w-28 rounded-md bg-[var(--muted)] animate-pulse" />
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 
       {error && (
-        <Card className="border-destructive/50 rounded-xl p-6">
-          <p className="text-sm text-[var(--destructive)]">
+        <Card className="rounded-2xl border-[var(--destructive)]/40 bg-[var(--status-rejected-muted)] p-6">
+          <p className="text-sm font-medium text-[var(--destructive)]">
             Failed to load applications. {String(error)}
+          </p>
+          <p className="text-xs text-[var(--muted-foreground)] mt-1">
+            Check your connection and try again.
           </p>
         </Card>
       )}
@@ -212,12 +238,18 @@ export function JobList() {
       {!isLoading && !error && jobs && (
         <>
           {jobs.length === 0 ? (
-            <Card className="border-[var(--border)] rounded-xl p-12 text-center">
-              <p className="text-[var(--muted-foreground)] mb-6">
-                No applications yet. Add your first one to get started.
+            <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-14 text-center">
+              <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-[var(--muted)] text-[var(--muted-foreground)]">
+                <Plus className="size-7" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+                No applications yet
+              </h3>
+              <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-8">
+                Add your first job to start tracking. You can update status anytime with one click.
               </p>
-              <Button onClick={() => setIsFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button onClick={() => setIsFormOpen(true)} size="lg" className="gap-2 shadow-sm">
+                <Plus className="h-4 w-4" />
                 Add application
               </Button>
             </Card>
@@ -229,6 +261,8 @@ export function JobList() {
                   job={job}
                   onEdit={handleEdit}
                   onDelete={handleDeleteClick}
+                  onStatusChange={handleStatusChange}
+                  isUpdatingStatus={updateMutation.isPending}
                 />
               ))}
             </div>

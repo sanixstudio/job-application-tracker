@@ -12,13 +12,15 @@ export default function DashboardLayout({
 }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
-      <header className="border-b border-[var(--border)] sticky top-0 z-50 bg-[var(--background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/60">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--background)]/70">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 font-semibold text-[var(--foreground)]"
+            className="flex items-center gap-2.5 font-semibold text-[var(--foreground)] text-lg tracking-tight"
           >
-            <Briefcase className="h-5 w-5 text-[var(--primary)]" />
+            <span className="flex size-9 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+              <Briefcase className="size-5" />
+            </span>
             Trackr
           </Link>
           <div className="flex items-center gap-2">
