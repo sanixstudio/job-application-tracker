@@ -32,7 +32,7 @@ export function DashboardAnalytics({
   if (funnel.total === 0) {
     return (
       <section aria-label="Application analytics">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <BarChart3 className="size-5" />
@@ -61,7 +61,7 @@ export function DashboardAnalytics({
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
           <CardContent className="p-5 flex items-center gap-4">
             <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--status-interview)]/15 text-[var(--status-interview)]">
               <Percent className="size-6" strokeWidth={1.75} />
@@ -80,7 +80,7 @@ export function DashboardAnalytics({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
           <CardContent className="p-5 flex items-center gap-4">
             <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
               <Clock className="size-6" strokeWidth={1.75} />
@@ -100,7 +100,7 @@ export function DashboardAnalytics({
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-medium">
             Pipeline funnel

@@ -137,7 +137,7 @@ export function EmailSuggestionsCard() {
 
   return (
     <>
-      <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)]">
+      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Mail className="h-5 w-5" />

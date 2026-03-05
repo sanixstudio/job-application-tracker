@@ -29,33 +29,42 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      <div className="space-y-1">
+      <header className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
           Dashboard
         </h1>
         <p className="text-base text-[var(--muted-foreground)]">
           Track and manage your job applications in one place.
         </p>
-      </div>
+      </header>
 
-      <DashboardStats stats={stats} />
+      <section aria-labelledby="pipeline-heading" className="space-y-4">
+        <h2 id="pipeline-heading" className="sr-only">
+          Pipeline overview
+        </h2>
+        <DashboardStats stats={stats} />
+        <DashboardAnalytics
+          funnel={analytics.funnel}
+          responseRate={analytics.responseRate}
+          staleCount={analytics.staleCount}
+        />
+      </section>
 
-      <DashboardAnalytics
-        funnel={analytics.funnel}
-        responseRate={analytics.responseRate}
-        staleCount={analytics.staleCount}
-      />
+      <section aria-labelledby="tools-heading" className="space-y-4">
+        <h2 id="tools-heading" className="text-lg font-semibold text-[var(--foreground)]">
+          Get set up
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          <ProfileChecklistCard />
+          <ExtensionKeyCard />
+        </div>
+        <EmailInboundCard />
+        <EmailSuggestionsCard />
+      </section>
 
-      <ProfileChecklistCard />
-
-      <ExtensionKeyCard />
-
-      <EmailInboundCard />
-      <EmailSuggestionsCard />
-
-      <div id="jobs">
+      <section id="jobs" className="scroll-mt-8">
         <JobList />
-      </div>
+      </section>
     </div>
   );
 }

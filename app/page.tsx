@@ -21,12 +21,18 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:block focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 focus:bg-[var(--background)] focus:text-[var(--foreground)] focus:no-underline focus:outline-none"
+      >
+        Skip to main content
+      </a>
       {/* Header */}
       <header className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold text-lg tracking-tight"
+            className="flex items-center gap-2 font-semibold text-lg tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
           >
             <Briefcase className="h-6 w-6 text-[var(--primary)]" />
             Trackr
@@ -61,7 +67,7 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <section className="container mx-auto px-4 py-24 md:py-32 lg:py-40">
           <div className="mx-auto max-w-3xl text-center space-y-10">
             <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl lg:text-7xl">

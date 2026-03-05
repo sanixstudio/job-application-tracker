@@ -113,9 +113,11 @@ type SectionType = "summary" | "skills" | "experience" | "education";
 /** Score card shown at top so users can improve their resume and see the score update. */
 function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[] }) {
   return (
-    <Card className="rounded-xl border-[var(--border)] bg-[var(--card)] p-4">
+    <Card className="rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm p-4 transition-all duration-200 hover:shadow-md">
       <h3 className="text-sm font-semibold text-[var(--foreground)] mb-2">Resume score</h3>
-      <p className="text-2xl font-bold text-[var(--primary)] mb-2">{score}/100</p>
+      <p className="text-2xl font-bold text-[var(--primary)] mb-2 tabular-nums">
+        {score}/100
+      </p>
       <p className="text-xs text-[var(--muted-foreground)] mb-2">
         Based on best practices: section completeness, STAR-style bullets, and quantifiable results. Make edits below to improve your score.
       </p>

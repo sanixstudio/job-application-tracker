@@ -87,16 +87,25 @@ export function ProfileChecklistCard() {
 
   if (isLoading || !checklist) {
     return (
-      <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)]">
+      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
             Get job-ready
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-6 text-[var(--muted-foreground)]">
-            <Loader2 className="h-6 w-6 animate-spin" />
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="size-12 rounded-xl bg-[var(--muted)] animate-pulse shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-3/4 max-w-[200px] rounded bg-[var(--muted)] animate-pulse" />
+              <div className="h-3 w-1/2 max-w-[120px] rounded bg-[var(--muted)] animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-5 rounded bg-[var(--muted)] animate-pulse" style={{ width: `${80 - i * 15}%` }} />
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -107,7 +116,7 @@ export function ProfileChecklistCard() {
   const allComplete = completedCount === totalCount;
 
   return (
-    <Card className="rounded-2xl border-[var(--border)] bg-[var(--card)]">
+    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <ClipboardList className="h-5 w-5" />
