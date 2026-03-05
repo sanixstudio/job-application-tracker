@@ -117,7 +117,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-[var(--border)]">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-(--border)">
           <DialogTitle className="text-xl">
             {initialData ? "Edit application" : "Add application"}
           </DialogTitle>
@@ -237,7 +237,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
           </div>
           </div>
 
-          <DialogFooter className="px-6 py-4 shrink-0 border-t border-[var(--border)] bg-[var(--muted)]/30">
+          <DialogFooter className="px-6 py-4 shrink-0 border-t border-(--border) bg-(--muted)/30">
             <Button
               type="button"
               variant="outline"

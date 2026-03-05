@@ -137,7 +137,7 @@ export function EmailSuggestionsCard() {
 
   return (
     <>
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
+      <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -150,10 +150,10 @@ export function EmailSuggestionsCard() {
         <CardContent className="space-y-3">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-[var(--muted-foreground)]" />
+              <Loader2 className="h-6 w-6 animate-spin text-(--muted-foreground)" />
             </div>
           ) : suggestions.length === 0 ? (
-            <p className="text-sm text-[var(--muted-foreground)] py-2">
+            <p className="text-sm text-(--muted-foreground) py-2">
               No pending suggestions. Forward application emails to your Trackr address to see them here.
             </p>
           ) : (
@@ -161,12 +161,12 @@ export function EmailSuggestionsCard() {
               {suggestions.map((s) => (
                 <li
                   key={s.id}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/20 p-3 space-y-2"
+                  className="rounded-lg border border-(--border) bg-(--muted)/20 p-3 space-y-2"
                 >
-                  <p className="text-sm font-medium text-[var(--foreground)] line-clamp-1">
+                  <p className="text-sm font-medium text-(--foreground) line-clamp-1">
                     {s.subject}
                   </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="text-xs text-(--muted-foreground)">
                     From: {s.from} {s.companyName && ` · ${s.companyName}`}
                   </p>
                   <div className="flex flex-wrap gap-2 pt-1">
@@ -233,7 +233,7 @@ export function EmailSuggestionsCard() {
               </Select>
             </div>
             {updateModal && (
-              <p className="text-sm text-[var(--muted-foreground)]">
+              <p className="text-sm text-(--muted-foreground)">
                 New status: <strong>{updateModal.suggestedStatus.replace("_", " ")}</strong>
               </p>
             )}

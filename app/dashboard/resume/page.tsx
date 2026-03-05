@@ -113,16 +113,16 @@ type SectionType = "summary" | "skills" | "experience" | "education";
 /** Score card shown at top so users can improve their resume and see the score update. */
 function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[] }) {
   return (
-    <Card className="rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm p-4 transition-all duration-200 hover:shadow-md">
-      <h3 className="text-sm font-semibold text-[var(--foreground)] mb-2">Resume score</h3>
-      <p className="text-2xl font-bold text-[var(--primary)] mb-2 tabular-nums">
+    <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm p-4 transition-all duration-200 hover:shadow-md">
+      <h3 className="text-sm font-semibold text-(--foreground) mb-2">Resume score</h3>
+      <p className="text-2xl font-bold text-(--primary) mb-2 tabular-nums">
         {score}/100
       </p>
-      <p className="text-xs text-[var(--muted-foreground)] mb-2">
+      <p className="text-xs text-(--muted-foreground) mb-2">
         Based on best practices: section completeness, STAR-style bullets, and quantifiable results. Make edits below to improve your score.
       </p>
       {feedback.length > 0 && (
-        <ul className="text-sm text-[var(--foreground)] space-y-1 list-disc list-inside">
+        <ul className="text-sm text-(--foreground) space-y-1 list-disc list-inside">
           {feedback.map((f, i) => (
             <li key={i}>{f}</li>
           ))}
@@ -607,15 +607,15 @@ export default function ResumePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--muted-foreground)]" />
+        <Loader2 className="h-8 w-8 animate-spin text-(--muted-foreground)" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="rounded-2xl border-[var(--border)] p-6">
-        <p className="text-sm text-[var(--destructive)]">
+      <Card className="rounded-2xl border-(--border) p-6">
+        <p className="text-sm text-(--destructive)">
           Failed to load resume. {String(error)}
         </p>
       </Card>
@@ -626,19 +626,19 @@ export default function ResumePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Resume</h1>
-          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+          <h1 className="text-2xl font-bold text-(--foreground)">Resume</h1>
+          <p className="text-sm text-(--muted-foreground) mt-0.5">
             Create your resume to export or tailor per job later.
           </p>
         </div>
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-14 text-center">
-          <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-[var(--muted)] text-[var(--muted-foreground)]">
+        <Card className="rounded-2xl border border-(--border) bg-(--card) p-14 text-center">
+          <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-(--muted) text-(--muted-foreground)">
             <FileText className="size-7" strokeWidth={1.5} />
           </div>
-          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+          <h2 className="text-lg font-semibold text-(--foreground) mb-2">
             No resume yet
           </h2>
-          <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-6">
+          <p className="text-sm text-(--muted-foreground) max-w-sm mx-auto mb-6">
             Upload your existing resume (PDF or DOCX) to import sections, or create one from scratch.
           </p>
           <input
@@ -693,12 +693,12 @@ export default function ResumePage() {
       <div className="space-y-6">
         <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Edit resume</h1>
-          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+          <h1 className="text-2xl font-bold text-(--foreground)">Edit resume</h1>
+          <p className="text-sm text-(--muted-foreground) mt-0.5">
             Update your title and sections. More section types coming soon.
           </p>
         </div>
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+        <Card className="rounded-2xl border border-(--border) bg-(--card) p-6">
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="resume-title">Title</Label>
@@ -734,9 +734,9 @@ export default function ResumePage() {
             </div>
             <div className="space-y-2">
               <Label>Experience (work history)</Label>
-              <p className="text-xs text-[var(--muted-foreground)]">Add jobs with company, title, dates, and bullet points.</p>
+              <p className="text-xs text-(--muted-foreground)">Add jobs with company, title, dates, and bullet points.</p>
               {experienceItems.map((job, idx) => (
-                <div key={idx} className="rounded-lg border border-[var(--border)] p-4 space-y-3">
+                <div key={idx} className="rounded-lg border border-(--border) p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
                       placeholder="Company"
@@ -782,7 +782,7 @@ export default function ResumePage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="text-[var(--destructive)]"
+                      className="text-(--destructive)"
                       onClick={() => setExperienceItems((prev) => prev.filter((_, i) => i !== idx))}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -804,11 +804,11 @@ export default function ResumePage() {
             </div>
             <div className="space-y-2">
               <Label>Education (optional)</Label>
-              <p className="text-xs text-[var(--muted-foreground)]">No AI tailoring — edit manually.</p>
+              <p className="text-xs text-(--muted-foreground)">No AI tailoring — edit manually.</p>
               {educationItems.map((edu, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 space-y-2"
+                  className="rounded-lg border border-(--border) bg-(--muted)/30 p-3 space-y-2"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div className="space-y-1">
@@ -871,7 +871,7 @@ export default function ResumePage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="text-[var(--destructive)]"
+                      className="text-(--destructive)"
                       onClick={() => setEducationItems((prev) => prev.filter((_, i) => i !== idx))}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -894,12 +894,12 @@ export default function ResumePage() {
             <div className="space-y-2 pt-2">
               {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
                 <div className="mt-3 space-y-2">
-                  <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
+                  <p className="text-xs font-medium text-(--muted-foreground)">Key points for this role</p>
                   <div className="flex flex-wrap gap-2">
                     {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)!.keywords.map((k) => (
                       <span
                         key={k}
-                        className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                        className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1 text-xs font-medium"
                       >
                         {k}
                       </span>
@@ -908,7 +908,7 @@ export default function ResumePage() {
                   <button
                     type="button"
                     onClick={() => setShowSnapshotDetail((v) => !v)}
-                    className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    className="flex items-center gap-1 text-xs text-(--muted-foreground) hover:text-(--foreground)"
                   >
                     <Info className="h-3.5 w-3.5" />
                     {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
@@ -918,17 +918,17 @@ export default function ResumePage() {
                     const snap = pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot;
                     if (!snap) return null;
                     return (
-                      <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                      <div className="mt-2 rounded-lg border border-(--border) bg-(--muted)/30 p-3 text-sm space-y-2">
                         {snap.tailoredSummary && (
                           <div>
-                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
-                            <p className="text-[var(--foreground)] whitespace-pre-wrap">{snap.tailoredSummary}</p>
+                            <p className="text-xs font-medium text-(--muted-foreground) mb-1">Suggested summary applied</p>
+                            <p className="text-(--foreground) whitespace-pre-wrap">{snap.tailoredSummary}</p>
                           </div>
                         )}
                         {(snap.bulletSuggestions?.length ?? 0) > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
-                            <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
+                            <p className="text-xs font-medium text-(--muted-foreground) mb-1">Bullet ideas</p>
+                            <ul className="list-disc list-inside space-y-0.5 text-(--foreground)">
                               {snap.bulletSuggestions!.map((b, i) => (
                                 <li key={i}>{b}</li>
                               ))}
@@ -968,12 +968,12 @@ export default function ResumePage() {
     <div className="space-y-6">
       <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
       <div>
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Resume</h1>
-        <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+        <h1 className="text-2xl font-bold text-(--foreground)">Resume</h1>
+        <p className="text-sm text-(--muted-foreground) mt-0.5">
           {resume.title} · {sectionCount} section{sectionCount !== 1 ? "s" : ""}
         </p>
       </div>
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+      <Card className="rounded-2xl border border-(--border) bg-(--card) p-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">{resume.title}</CardTitle>
           <CardDescription>
@@ -995,8 +995,8 @@ export default function ResumePage() {
             const isEditingThisSection = editingSection === sectionType;
 
             return (
-              <div key={s.id || sectionType} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-[var(--foreground)]">{s.heading}</h3>
+              <div key={s.id || sectionType} className="rounded-xl border border-(--border) bg-(--card) p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-(--foreground)">{s.heading}</h3>
 
                 {isEditingThisSection ? (
                   <>
@@ -1015,7 +1015,7 @@ export default function ResumePage() {
                     {sectionType === "experience" && (
                       <div className="space-y-2">
                         {experienceItems.map((job, idx) => (
-                          <div key={idx} className="rounded-lg border border-[var(--border)] p-3 space-y-2">
+                          <div key={idx} className="rounded-lg border border-(--border) p-3 space-y-2">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <Input placeholder="Company" value={job.company} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, company: e.target.value } : p)))} />
                               <Input placeholder="Job title" value={job.title} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, title: e.target.value } : p)))} />
@@ -1023,7 +1023,7 @@ export default function ResumePage() {
                             </div>
                             <Textarea placeholder="Bullet points (one per line)" value={job.description} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, description: e.target.value } : p)))} rows={2} className="resize-y" />
                             <div className="flex justify-end">
-                              <Button type="button" variant="ghost" size="sm" className="text-[var(--destructive)]" onClick={() => setExperienceItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
+                              <Button type="button" variant="ghost" size="sm" className="text-(--destructive)" onClick={() => setExperienceItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
                             </div>
                           </div>
                         ))}
@@ -1033,7 +1033,7 @@ export default function ResumePage() {
                     {sectionType === "education" && (
                       <div className="space-y-2">
                         {educationItems.map((edu, idx) => (
-                          <div key={idx} className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 space-y-2">
+                          <div key={idx} className="rounded-lg border border-(--border) bg-(--muted)/30 p-3 space-y-2">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div className="space-y-1"><Label className="text-xs">School</Label><Input value={edu.school} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, school: e.target.value } : p)))} placeholder="University name" /></div>
                               <div className="space-y-1"><Label className="text-xs">Dates</Label><Input value={edu.dates} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, dates: e.target.value } : p)))} placeholder="e.g. 2015 – 2019" /></div>
@@ -1043,14 +1043,14 @@ export default function ResumePage() {
                               <div className="space-y-1"><Label className="text-xs">Field of study</Label><Input value={edu.field} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, field: e.target.value } : p)))} placeholder="e.g. Computer Science" /></div>
                             </div>
                             <div className="flex justify-end">
-                              <Button type="button" variant="ghost" size="sm" className="text-[var(--destructive)]" onClick={() => setEducationItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
+                              <Button type="button" variant="ghost" size="sm" className="text-(--destructive)" onClick={() => setEducationItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
                             </div>
                           </div>
                         ))}
                         <Button type="button" variant="outline" size="sm" onClick={() => setEducationItems((prev) => [...prev, { school: "", degree: "", field: "", dates: "" }])}><Plus className="h-4 w-4 mr-1" /> Add education</Button>
                       </div>
                     )}
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-(--border)">
                       <Button onClick={() => handleSaveSection(sectionType)} disabled={updateMutation.isPending} size="sm" className="gap-1">
                         {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                         Save
@@ -1063,16 +1063,16 @@ export default function ResumePage() {
                 {sectionType === "summary" && (
                   <>
                     {s.body && (
-                      <p className="text-sm text-[var(--muted-foreground)] whitespace-pre-wrap">{s.body}</p>
+                      <p className="text-sm text-(--muted-foreground) whitespace-pre-wrap">{s.body}</p>
                     )}
                     {snapshot?.keywords?.length ? (
                       <div className="mt-3 space-y-2">
-                        <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
+                        <p className="text-xs font-medium text-(--muted-foreground)">Key points for this role</p>
                         <div className="flex flex-wrap gap-2">
                           {snapshot.keywords.map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                              className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1 text-xs font-medium"
                             >
                               {k}
                             </span>
@@ -1081,24 +1081,24 @@ export default function ResumePage() {
                         <button
                           type="button"
                           onClick={() => setShowSnapshotDetail((v) => !v)}
-                          className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          className="flex items-center gap-1 text-xs text-(--muted-foreground) hover:text-(--foreground)"
                         >
                           <Info className="h-3.5 w-3.5" />
                           {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
                           {showSnapshotDetail ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                         </button>
                         {showSnapshotDetail && (
-                          <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                          <div className="mt-2 rounded-lg border border-(--border) bg-(--muted)/30 p-3 text-sm space-y-2">
                             {snapshot.tailoredSummary && (
                               <div>
-                                <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
-                                <p className="text-[var(--foreground)] whitespace-pre-wrap">{snapshot.tailoredSummary}</p>
+                                <p className="text-xs font-medium text-(--muted-foreground) mb-1">Suggested summary applied</p>
+                                <p className="text-(--foreground) whitespace-pre-wrap">{snapshot.tailoredSummary}</p>
                               </div>
                             )}
                             {(snapshot.bulletSuggestions?.length ?? 0) > 0 && (
                               <div>
-                                <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
-                                <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
+                                <p className="text-xs font-medium text-(--muted-foreground) mb-1">Bullet ideas</p>
+                                <ul className="list-disc list-inside space-y-0.5 text-(--foreground)">
                                   {snapshot.bulletSuggestions!.map((b, i) => (
                                     <li key={i}>{b}</li>
                                   ))}
@@ -1119,14 +1119,14 @@ export default function ResumePage() {
                         {s.body.split(/[\n,]+/).map((skill) => skill.trim()).filter(Boolean).map((skill) => (
                           <span
                             key={skill}
-                            className="inline-flex items-center rounded-full bg-[var(--muted)] text-[var(--foreground)] px-3 py-1 text-xs font-medium"
+                            className="inline-flex items-center rounded-full bg-(--muted) text-(--foreground) px-3 py-1 text-xs font-medium"
                           >
                             {skill}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-[var(--muted-foreground)] italic">No skills added yet.</p>
+                      <p className="text-sm text-(--muted-foreground) italic">No skills added yet.</p>
                     )}
                   </>
                 )}
@@ -1142,16 +1142,16 @@ export default function ResumePage() {
                           const description = item["description"] ?? item["bullets"] ?? "";
                           return (
                             <div key={idx}>
-                              <p className="text-sm font-medium text-[var(--foreground)]">
+                              <p className="text-sm font-medium text-(--foreground)">
                                 {(title || company) && (
                                   <span>{[title, company].filter(Boolean).join(" at ")}</span>
                                 )}
                                 {dates && (
-                                  <span className="text-[var(--muted-foreground)] font-normal ml-1">· {dates}</span>
+                                  <span className="text-(--muted-foreground) font-normal ml-1">· {dates}</span>
                                 )}
                               </p>
                               {description && (
-                                <ul className="mt-1 list-disc list-inside text-sm text-[var(--muted-foreground)] space-y-0.5">
+                                <ul className="mt-1 list-disc list-inside text-sm text-(--muted-foreground) space-y-0.5">
                                   {description
                                     .split(/\r?\n/)
                                     .filter((l) => l.trim())
@@ -1165,7 +1165,7 @@ export default function ResumePage() {
                         })}
                       </div>
                     ) : (
-                      <p className="text-sm text-[var(--muted-foreground)] italic">No experience entries yet.</p>
+                      <p className="text-sm text-(--muted-foreground) italic">No experience entries yet.</p>
                     )}
                   </>
                 )}
@@ -1183,7 +1183,7 @@ export default function ResumePage() {
                           const parts = [school, degreeLine, dates].filter(Boolean);
                           return (
                             <div key={idx}>
-                              <p className="text-sm font-medium text-[var(--foreground)]">
+                              <p className="text-sm font-medium text-(--foreground)">
                                 {parts.join(" · ")}
                               </p>
                             </div>
@@ -1191,16 +1191,16 @@ export default function ResumePage() {
                         })}
                       </div>
                     ) : (
-                      <p className="text-sm text-[var(--muted-foreground)] italic">No education added yet.</p>
+                      <p className="text-sm text-(--muted-foreground) italic">No education added yet.</p>
                     )}
                   </>
                 )}
 
                 {!hasContent && sectionType !== "summary" && (
-                  <p className="text-sm text-[var(--muted-foreground)] italic">Click Edit to add content.</p>
+                  <p className="text-sm text-(--muted-foreground) italic">Click Edit to add content.</p>
                 )}
 
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-(--border)">
                   {showTailor && (
                     <Button onClick={() => setTailorOpen(true)} variant="outline" size="sm" className="gap-1">
                       <Sparkles className="h-3.5 w-3.5" />
@@ -1292,28 +1292,28 @@ export default function ResumePage() {
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2 space-y-4">
             {tailorResult ? (
               <>
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm overflow-hidden">
+                <div className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden">
                   <div className="p-4 space-y-4">
                     {tailorResult.tailoredSummary && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
                           Suggested summary
                         </h4>
-                        <p className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm text-(--foreground) leading-relaxed whitespace-pre-wrap">
                           {tailorResult.tailoredSummary}
                         </p>
                       </div>
                     )}
                     {(tailorResult.keywords?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
                           Keywords to include
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {(tailorResult.keywords ?? []).map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                              className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1 text-xs font-medium"
                             >
                               {k}
                             </span>
@@ -1323,14 +1323,14 @@ export default function ResumePage() {
                     )}
                     {(tailorResult.suggestedSkills?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
                           Suggested skills
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {(tailorResult.suggestedSkills ?? []).map((sk) => (
                             <span
                               key={sk}
-                              className="inline-flex items-center rounded-full bg-[var(--muted)] text-[var(--foreground)] px-3 py-1 text-xs font-medium"
+                              className="inline-flex items-center rounded-full bg-(--muted) text-(--foreground) px-3 py-1 text-xs font-medium"
                             >
                               {sk}
                             </span>
@@ -1340,13 +1340,13 @@ export default function ResumePage() {
                     )}
                     {(tailorResult.bulletSuggestions?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
                           Bullet ideas
                         </h4>
                         <ul className="space-y-1.5">
                           {(tailorResult.bulletSuggestions ?? []).map((b, i) => (
-                            <li key={i} className="flex gap-2 text-sm text-[var(--foreground)]">
-                              <span className="text-[var(--primary)] mt-0.5">•</span>
+                            <li key={i} className="flex gap-2 text-sm text-(--foreground)">
+                              <span className="text-(--primary) mt-0.5">•</span>
                               <span className="flex-1">{b}</span>
                             </li>
                           ))}
@@ -1370,7 +1370,7 @@ export default function ResumePage() {
               </div>
             )}
           </div>
-          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row flex-wrap px-6 pb-6 pt-2 border-t border-[var(--border)]">
+          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row flex-wrap px-6 pb-6 pt-2 border-t border-(--border)">
             {tailorResult ? (
               <>
                 {tailorResult.tailoredSummary && (

@@ -15,7 +15,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 ## Tech Stack
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript
-- **UI**: shadcn/ui, Tailwind CSS v4
+- **UI**: shadcn/ui, Tailwind CSS v4 (use canonical variable syntax in classes: e.g. `bg-(--card)` not `bg-[var(--card)]`)
 - **Auth**: Clerk
 - **Data**: TanStack React Query, React Hook Form, Zod
 - **Database**: Neon PostgreSQL, Drizzle ORM

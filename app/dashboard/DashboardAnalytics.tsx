@@ -32,7 +32,7 @@ export function DashboardAnalytics({
   if (funnel.total === 0) {
     return (
       <section aria-label="Application analytics">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <BarChart3 className="size-5" />
@@ -40,7 +40,7 @@ export function DashboardAnalytics({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-[var(--muted-foreground)]">
+            <p className="text-sm text-(--muted-foreground)">
               Add applications to see your funnel, response rate, and no-response metrics.
             </p>
           </CardContent>
@@ -56,43 +56,43 @@ export function DashboardAnalytics({
 
   return (
     <section aria-label="Application analytics" className="space-y-4">
-      <h2 className="text-lg font-semibold text-[var(--foreground)]">
+      <h2 className="text-lg font-semibold text-(--foreground)">
         Analytics
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm">
           <CardContent className="p-5 flex items-center gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--status-interview)]/15 text-[var(--status-interview)]">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--status-interview)/15 text-(--status-interview)">
               <Percent className="size-6" strokeWidth={1.75} />
             </span>
             <div>
-              <p className="text-sm font-medium text-[var(--muted-foreground)]">
+              <p className="text-sm font-medium text-(--muted-foreground)">
                 Response rate
               </p>
-              <p className="text-2xl font-bold tabular-nums text-[var(--foreground)]">
+              <p className="text-2xl font-bold tabular-nums text-(--foreground)">
                 {responseRate}%
               </p>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-(--muted-foreground)">
                 Applications that reached interview or offer
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm">
           <CardContent className="p-5 flex items-center gap-4">
             <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
               <Clock className="size-6" strokeWidth={1.75} />
             </span>
             <div>
-              <p className="text-sm font-medium text-[var(--muted-foreground)]">
+              <p className="text-sm font-medium text-(--muted-foreground)">
                 No response (14+ days)
               </p>
-              <p className="text-2xl font-bold tabular-nums text-[var(--foreground)]">
+              <p className="text-2xl font-bold tabular-nums text-(--foreground)">
                 {staleCount}
               </p>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-(--muted-foreground)">
                 Still in Applied with no update
               </p>
             </div>
@@ -100,7 +100,7 @@ export function DashboardAnalytics({
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+      <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-medium">
             Pipeline funnel
@@ -113,15 +113,15 @@ export function DashboardAnalytics({
             return (
               <div key={key} className="space-y-1.5">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium text-[var(--foreground)]">
+                  <span className="font-medium text-(--foreground)">
                     {label}
                   </span>
-                  <span className="tabular-nums text-[var(--muted-foreground)]">
+                  <span className="tabular-nums text-(--muted-foreground)">
                     {count}
                   </span>
                 </div>
                 <div
-                  className="h-3 w-full overflow-hidden rounded-full bg-[var(--muted)]"
+                  className="h-3 w-full overflow-hidden rounded-full bg-(--muted)"
                   role="presentation"
                 >
                   <div

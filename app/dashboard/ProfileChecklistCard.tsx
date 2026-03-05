@@ -87,7 +87,7 @@ export function ProfileChecklistCard() {
 
   if (isLoading || !checklist) {
     return (
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+      <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
@@ -96,15 +96,15 @@ export function ProfileChecklistCard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-xl bg-[var(--muted)] animate-pulse shrink-0" />
+            <div className="size-12 rounded-xl bg-(--muted) animate-pulse shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-3/4 max-w-[200px] rounded bg-[var(--muted)] animate-pulse" />
-              <div className="h-3 w-1/2 max-w-[120px] rounded bg-[var(--muted)] animate-pulse" />
+              <div className="h-4 w-3/4 max-w-[200px] rounded bg-(--muted) animate-pulse" />
+              <div className="h-3 w-1/2 max-w-[120px] rounded bg-(--muted) animate-pulse" />
             </div>
           </div>
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-5 rounded bg-[var(--muted)] animate-pulse" style={{ width: `${80 - i * 15}%` }} />
+              <div key={i} className="h-5 rounded bg-(--muted) animate-pulse" style={{ width: `${80 - i * 15}%` }} />
             ))}
           </div>
         </CardContent>
@@ -116,7 +116,7 @@ export function ProfileChecklistCard() {
   const allComplete = completedCount === totalCount;
 
   return (
-    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
+    <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <ClipboardList className="h-5 w-5" />
@@ -128,12 +128,12 @@ export function ProfileChecklistCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2 text-sm">
-          <span className="font-medium text-[var(--foreground)]">
+          <span className="font-medium text-(--foreground)">
             {completedCount}/{totalCount} complete
           </span>
-          <div className="flex-1 h-2 rounded-full bg-[var(--muted)] overflow-hidden">
+          <div className="flex-1 h-2 rounded-full bg-(--muted) overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--primary)] transition-all"
+              className="h-full rounded-full bg-(--primary) transition-all"
               style={{ width: `${score}%` }}
             />
           </div>
@@ -155,7 +155,7 @@ export function ProfileChecklistCard() {
                 <button
                   type="button"
                   onClick={handleOpenEdit}
-                  className="text-[var(--primary)] hover:underline"
+                  className="text-(--primary) hover:underline"
                 >
                   Add LinkedIn
                 </button>
@@ -169,7 +169,7 @@ export function ProfileChecklistCard() {
                 <button
                   type="button"
                   onClick={handleOpenEdit}
-                  className="text-[var(--primary)] hover:underline"
+                  className="text-(--primary) hover:underline"
                 >
                   Add GitHub
                 </button>
@@ -180,7 +180,7 @@ export function ProfileChecklistCard() {
               icon={<Briefcase className="h-4 w-4" />}
               label="Add your first application"
               cta={
-                <a href="#jobs" className="text-[var(--primary)] hover:underline">
+                <a href="#jobs" className="text-(--primary) hover:underline">
                   Add application
                 </a>
               }
@@ -198,7 +198,7 @@ export function ProfileChecklistCard() {
         </Dialog>
 
         {allComplete && (
-          <p className="text-sm font-medium text-[var(--primary)] flex items-center gap-2">
+          <p className="text-sm font-medium text-(--primary) flex items-center gap-2">
             <Check className="h-4 w-4" />
             You&apos;re job-ready!
           </p>
@@ -229,13 +229,13 @@ function ChecklistItem({
   return (
     <li className="flex items-center gap-3 text-sm">
       {done ? (
-        <Check className="h-5 w-5 shrink-0 text-[var(--primary)]" />
+        <Check className="h-5 w-5 shrink-0 text-(--primary)" />
       ) : (
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-[var(--muted-foreground)]">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-(--muted-foreground)">
           {icon}
         </span>
       )}
-      <span className={done ? "text-[var(--muted-foreground)]" : "text-[var(--foreground)]"}>{label}</span>
+      <span className={done ? "text-(--muted-foreground)" : "text-(--foreground)"}>{label}</span>
       {!done && <span className="ml-auto">{cta}</span>}
     </li>
   );

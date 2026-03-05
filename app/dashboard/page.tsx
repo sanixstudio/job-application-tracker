@@ -30,10 +30,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
+        <h1 className="text-3xl font-bold tracking-tight text-(--foreground) sm:text-4xl">
           Dashboard
         </h1>
-        <p className="text-base text-[var(--muted-foreground)]">
+        <p className="text-base text-(--muted-foreground)">
           Track and manage your job applications in one place.
         </p>
       </header>
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       </section>
 
       <section aria-labelledby="tools-heading" className="space-y-4">
-        <h2 id="tools-heading" className="text-lg font-semibold text-[var(--foreground)]">
+        <h2 id="tools-heading" className="text-lg font-semibold text-(--foreground)">
           Get set up
         </h2>
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">

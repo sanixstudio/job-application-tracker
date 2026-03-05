@@ -42,7 +42,7 @@ export function ExtensionKeyCard() {
   };
 
   return (
-    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
+    <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <Key className="h-5 w-5" />
@@ -67,8 +67,8 @@ export function ExtensionKeyCard() {
           {key ? "Regenerate API key" : "Generate API key"}
         </Button>
         {key && (
-          <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 px-3 py-2">
-            <code className="flex-1 truncate text-sm text-[var(--foreground)]">
+          <div className="flex items-center gap-2 rounded-lg border border-(--border) bg-(--muted)/30 px-3 py-2">
+            <code className="flex-1 truncate text-sm text-(--foreground)">
               {key}
             </code>
             <Button
@@ -78,7 +78,7 @@ export function ExtensionKeyCard() {
               onClick={handleCopy}
             >
               {copied ? (
-                <Check className="h-4 w-4 text-[var(--primary)]" />
+                <Check className="h-4 w-4 text-(--primary)" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

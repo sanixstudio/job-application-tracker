@@ -33,8 +33,8 @@ export function DashboardNav() {
             className={cn(
               "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               isActive
-                ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/50"
+                ? "bg-(--primary)/10 text-(--primary)"
+                : "text-(--muted-foreground) hover:text-(--foreground) hover:bg-(--muted)/50"
             )}
           >
             <Icon className="size-4 shrink-0" aria-hidden />
