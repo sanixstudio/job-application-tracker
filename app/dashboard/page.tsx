@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { computeAnalytics } from "@/lib/analytics";
 import { DashboardAnalytics } from "./DashboardAnalytics";
 import { DashboardStats } from "./DashboardStats";
+import { EmailInboundCard } from "./EmailInboundCard";
+import { EmailSuggestionsCard } from "./EmailSuggestionsCard";
 import { ExtensionKeyCard } from "./ExtensionKeyCard";
 import { JobList } from "@/components/jobs/JobList";
 
@@ -44,6 +46,9 @@ export default async function DashboardPage() {
       />
 
       <ExtensionKeyCard />
+
+      <EmailInboundCard />
+      <EmailSuggestionsCard />
 
       <JobList />
     </div>

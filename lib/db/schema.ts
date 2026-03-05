@@ -44,6 +44,14 @@ export const applications = pgTable(
   ]
 );
 
+/** Parsed suggestion from an inbound application email. */
+export type ParsedEmailResult = {
+  suggestedAction: "add" | "update" | "dismiss";
+  suggestedStatus?: ApplicationStatus;
+  companyName?: string;
+  jobTitle?: string;
+};
+
 export const emailTracking = pgTable(
   "email_tracking",
   {
@@ -55,9 +63,14 @@ export const emailTracking = pgTable(
     receivedDate: timestamp("received_date", { mode: "date" }).notNull(),
     processed: boolean("processed").notNull().default(false),
     jobLinks: text("job_links").notNull().default("[]"),
+    /** Parser output: suggested action (add/update/dismiss), status, company/title when extracted. */
+    parsedResult: jsonb("parsed_result").$type<ParsedEmailResult>(),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   },
-  (table) => [index("idx_email_tracking_processed").on(table.processed)]
+  (table) => [
+    index("idx_email_tracking_processed").on(table.processed),
+    index("idx_email_tracking_user_processed").on(table.userId, table.processed),
+  ]
 );
 
 export const userSettings = pgTable(
@@ -73,10 +86,15 @@ export const userSettings = pgTable(
     autoApply: boolean("auto_apply").notNull().default(false),
     /** API key for Chrome extension (X-Trackr-API-Key). Nullable; unique when set. */
     extensionApiKey: text("extension_api_key"),
+    /** Token for inbound email: forward to trackr+TOKEN@inbound.example.com to associate email with this user. */
+    inboundEmailToken: text("inbound_email_token"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
-  (table) => [index("idx_user_settings_extension_api_key").on(table.extensionApiKey)]
+  (table) => [
+    index("idx_user_settings_extension_api_key").on(table.extensionApiKey),
+    index("idx_user_settings_inbound_email_token").on(table.inboundEmailToken),
+  ]
 );
 
 export const resumes = pgTable(
