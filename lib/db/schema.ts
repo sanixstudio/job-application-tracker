@@ -88,6 +88,9 @@ export const userSettings = pgTable(
     extensionApiKey: text("extension_api_key"),
     /** Token for inbound email: forward to trackr+TOKEN@inbound.example.com to associate email with this user. */
     inboundEmailToken: text("inbound_email_token"),
+    /** Profile URLs for job-ready checklist. */
+    linkedinUrl: text("linkedin_url"),
+    githubUrl: text("github_url"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },

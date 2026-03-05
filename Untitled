@@ -1,0 +1,2 @@
+# Database URL
+DATABASE_URL='postgresql://neondb_owner:npg_QydwmI4bOYC0@ep-wispy-mountain-ai17ytik-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'

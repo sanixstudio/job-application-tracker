@@ -39,7 +39,7 @@
 
 ## 🚧 In Progress
 
-**Current sprint:** Sprint 5 complete. Next: Sprint 6 (e.g. email parsing) per product plan. See `docs/sprints/SPRINT_05.md`.
+**Current sprint:** Sprint 7 — Profile checklist (M4). See `docs/sprints/SPRINT_07.md`. Sprints 1–6 (resume, tailor, extension, analytics, email parsing) are complete.
 
 ---
 
@@ -59,10 +59,14 @@
 
 - **S6-1** Inbound + parser; **S6-2** Suggestions API + dashboard UI
 
-### After Sprint 6
+### Sprint 7 — Profile checklist (M4) — NEXT
 
-- **Email parsing** — Inbound endpoint, parse → suggest “Add” / “Update status” (M4)
-- **Profile checklist** — Job-ready score, onboarding polish (M4)
+- **S7-1** Profile checklist backend: `linkedinUrl`/`githubUrl` on user_settings, GET/PATCH `/api/profile/checklist`, job-ready score
+- **S7-2** Profile checklist dashboard UI: “Get job-ready” card, checklist items + CTAs
+
+### After Sprint 7
+
+- **Profile checklist** — Job-ready score, onboarding polish (M4) — in Sprint 7
 
 ### Later (Phase III+)
 
@@ -82,14 +86,15 @@
 | M4 Email + checklist     | 🚧 In progress | S6 (email parsing) done |
 
 
-**Overall:** Phase II in progress; foundation + resume + tailor + extension + analytics complete. Next: profile checklist (Sprint 7).
+**Overall:** Phase II in progress; foundation + resume + tailor + extension + analytics + email parsing complete. Next: profile checklist (Sprint 7).
 
 ---
 
 ## 🎯 Immediate Next Steps
 
-1. Implement **S5-1** (Analytics API): funnel counts, response rate, optional stale 14+ days. “Open Trackr”.
-2. Implement **S5-2** (Analytics UI). 3. Update `docs/sprints/SPRINT_05.md` as tasks complete.
+1. Implement **S7-1** (Profile checklist backend): add `linkedinUrl`/`githubUrl` to `user_settings`, migration, `GET /api/profile/checklist` and `PATCH /api/profile/checklist`.
+2. Implement **S7-2** (Profile checklist UI): “Get job-ready” section on dashboard with score, checklist items, and CTAs.
+3. Update `docs/sprints/SPRINT_07.md` as tasks complete.
 
 ---
 

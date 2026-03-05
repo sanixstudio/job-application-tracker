@@ -9,6 +9,7 @@ import { DashboardStats } from "./DashboardStats";
 import { EmailInboundCard } from "./EmailInboundCard";
 import { EmailSuggestionsCard } from "./EmailSuggestionsCard";
 import { ExtensionKeyCard } from "./ExtensionKeyCard";
+import { ProfileChecklistCard } from "./ProfileChecklistCard";
 import { JobList } from "@/components/jobs/JobList";
 
 /**
@@ -45,12 +46,16 @@ export default async function DashboardPage() {
         staleCount={analytics.staleCount}
       />
 
+      <ProfileChecklistCard />
+
       <ExtensionKeyCard />
 
       <EmailInboundCard />
       <EmailSuggestionsCard />
 
-      <JobList />
+      <div id="jobs">
+        <JobList />
+      </div>
     </div>
   );
 }
