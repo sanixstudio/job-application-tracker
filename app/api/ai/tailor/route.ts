@@ -31,6 +31,7 @@ export interface TailorResult {
   tailoredSummary?: string;
   keywords?: string[];
   bulletSuggestions?: string[];
+  suggestedSkills?: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -87,8 +88,8 @@ export async function POST(request: NextRequest) {
         {
           role: "system",
           content: `You are a resume coach. Given a candidate's resume and a job description, suggest how to tailor the resume. Respond only with valid JSON in this exact shape (no markdown, no code block):
-{ "tailoredSummary": "2-3 sentence professional summary tailored to the job", "keywords": ["keyword1", "keyword2", ...], "bulletSuggestions": ["Optional bullet point suggestion 1", "Optional bullet point suggestion 2"] }
-Keep tailoredSummary under 150 words. Include 5-10 keywords from the job that the candidate should weave in. bulletSuggestions can be 0-3 bullets.`,
+{ "tailoredSummary": "2-3 sentence professional summary tailored to the job", "keywords": ["keyword1", "keyword2", ...], "bulletSuggestions": ["Optional bullet point suggestion 1", "Optional bullet point suggestion 2"], "suggestedSkills": ["Skill1", "Skill2", ...] }
+Keep tailoredSummary under 150 words. Include 5-10 keywords from the job. bulletSuggestions: 0-3 achievement-style bullets. suggestedSkills: 5-12 technical or soft skills from the job to list in a Skills section.`,
         },
         {
           role: "user",

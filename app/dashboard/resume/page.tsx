@@ -15,9 +15,67 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download, Sparkles, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download, Sparkles, Info, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import type { Resume, ResumeContent, ResumeSection, LastTailorSnapshot } from "@/types";
+
+/** One work history entry for the Experience section. */
+export interface ExperienceItem {
+  company: string;
+  title: string;
+  dates: string;
+  description: string;
+}
+
+/** One education entry. No AI tailoring — user-edited only. */
+export interface EducationItem {
+  school: string;
+  degree: string;
+  field: string;
+  dates: string;
+}
+
+function getSection(resume: Resume | null, type: ResumeSection["type"]): ResumeSection | undefined {
+  return resume?.content?.sections?.find((s) => s.type === type);
+}
+
+function sectionToExperienceItems(section: ResumeSection | undefined): ExperienceItem[] {
+  if (!section?.items?.length) return [];
+  return section.items.map((item) => ({
+    company: (item.company ?? "").trim(),
+    title: (item.title ?? "").trim(),
+    dates: (item.dates ?? "").trim(),
+    description: (item.description ?? item.bullets ?? "").trim(),
+  }));
+}
+
+function experienceItemsToSectionItems(items: ExperienceItem[]): Array<Record<string, string>> {
+  return items.map(({ company, title, dates, description }) => ({
+    company,
+    title,
+    dates,
+    description,
+  }));
+}
+
+function sectionToEducationItems(section: ResumeSection | undefined): EducationItem[] {
+  if (!section?.items?.length) return [];
+  return section.items.map((item) => ({
+    school: (item["school"] ?? "").trim(),
+    degree: (item["degree"] ?? "").trim(),
+    field: (item["field"] ?? "").trim(),
+    dates: (item["dates"] ?? "").trim(),
+  }));
+}
+
+function educationItemsToSectionItems(items: EducationItem[]): Array<Record<string, string>> {
+  return items.map(({ school, degree, field, dates }) => ({
+    school,
+    degree,
+    field,
+    dates,
+  }));
+}
 
 async function fetchResume(): Promise<Resume | null> {
   const res = await fetch("/api/resumes");
@@ -54,6 +112,9 @@ export default function ResumePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [summaryBody, setSummaryBody] = useState("");
+  const [skillsBody, setSkillsBody] = useState("");
+  const [experienceItems, setExperienceItems] = useState<ExperienceItem[]>([]);
+  const [educationItems, setEducationItems] = useState<EducationItem[]>([]);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [tailorOpen, setTailorOpen] = useState(false);
   const [jobDescriptionForTailor, setJobDescriptionForTailor] = useState("");
@@ -61,6 +122,7 @@ export default function ResumePage() {
     tailoredSummary?: string;
     keywords?: string[];
     bulletSuggestions?: string[];
+    suggestedSkills?: string[];
   } | null>(null);
   const [isTailoring, setIsTailoring] = useState(false);
   const [pendingTailorSnapshot, setPendingTailorSnapshot] = useState<LastTailorSnapshot | null>(null);
@@ -71,14 +133,39 @@ export default function ResumePage() {
     queryFn: fetchResume,
   });
 
-  const enterEditMode = useCallback((r: Resume | null, options?: { summaryOverride?: string }) => {
+  const enterEditMode = useCallback((
+    r: Resume | null,
+    options?: { summaryOverride?: string; skillsOverride?: string; experienceAppendBullets?: string[] }
+  ) => {
     if (r) {
       setTitle(r.title);
-      const summary = r.content?.sections?.find((s) => s.type === "summary");
+      const summary = getSection(r, "summary");
       setSummaryBody(options?.summaryOverride ?? summary?.body ?? "");
+      const skills = getSection(r, "skills");
+      setSkillsBody(options?.skillsOverride ?? skills?.body ?? "");
+      const items = sectionToExperienceItems(getSection(r, "experience"));
+      if (options?.experienceAppendBullets?.length) {
+        const bulletText = options.experienceAppendBullets.map((b) => (b.startsWith("•") ? b : `• ${b}`)).join("\n");
+        if (items.length > 0) {
+          setExperienceItems(items.map((it, i) =>
+            i === 0 ? { ...it, description: it.description ? `${it.description}\n${bulletText}` : bulletText } : it
+          ));
+        } else {
+          setExperienceItems([{ company: "Relevant experience", title: "", dates: "", description: bulletText }]);
+        }
+      } else {
+        setExperienceItems(items.length ? items : [{ company: "", title: "", dates: "", description: "" }]);
+      }
+      const edu = sectionToEducationItems(getSection(r, "education"));
+      setEducationItems(edu.length ? edu : [{ school: "", degree: "", field: "", dates: "" }]);
     } else {
       setTitle("My Resume");
       setSummaryBody(options?.summaryOverride ?? "");
+      setSkillsBody(options?.skillsOverride ?? "");
+      setExperienceItems(options?.experienceAppendBullets?.length
+        ? [{ company: "Relevant experience", title: "", dates: "", description: options.experienceAppendBullets.map((b) => `• ${b}`).join("\n") }]
+        : [{ company: "", title: "", dates: "", description: "" }]);
+      setEducationItems([{ school: "", degree: "", field: "", dates: "" }]);
     }
     setIsEditing(true);
   }, []);
@@ -182,25 +269,63 @@ export default function ResumePage() {
   const handleCancelEdit = () => {
     if (resume) {
       setTitle(resume.title);
-      const summary = resume.content?.sections?.find((s) => s.type === "summary");
-      setSummaryBody(summary?.body ?? "");
+      setSummaryBody(getSection(resume, "summary")?.body ?? "");
+      setSkillsBody(getSection(resume, "skills")?.body ?? "");
+      setExperienceItems(sectionToExperienceItems(getSection(resume, "experience")) || [{ company: "", title: "", dates: "", description: "" }]);
+      setEducationItems(sectionToEducationItems(getSection(resume, "education")) || [{ school: "", degree: "", field: "", dates: "" }]);
     }
     setShowSnapshotDetail(false);
     setIsEditing(false);
   };
 
+  const upsertSection = (sections: ResumeSection[], section: ResumeSection): ResumeSection[] => {
+    const idx = sections.findIndex((s) => s.type === section.type);
+    const next = [...sections];
+    if (idx >= 0) next[idx] = section;
+    else next.push(section);
+    return next;
+  };
+
   const handleSave = () => {
     if (!resume) return;
-    const sections: ResumeSection[] = [...(resume.content?.sections ?? [])];
-    const summaryIdx = sections.findIndex((s) => s.type === "summary");
+    let sections: ResumeSection[] = [...(resume.content?.sections ?? [])];
+
     const summarySection: ResumeSection = {
-      id: summaryIdx >= 0 ? sections[summaryIdx].id : crypto.randomUUID(),
+      id: getSection(resume, "summary")?.id ?? crypto.randomUUID(),
       type: "summary",
       heading: "Summary",
       body: summaryBody,
     };
-    if (summaryIdx >= 0) sections[summaryIdx] = summarySection;
-    else sections.push(summarySection);
+    sections = upsertSection(sections, summarySection);
+
+    const skillsSection: ResumeSection = {
+      id: getSection(resume, "skills")?.id ?? crypto.randomUUID(),
+      type: "skills",
+      heading: "Skills",
+      body: skillsBody,
+    };
+    sections = upsertSection(sections, skillsSection);
+
+    const experienceSection: ResumeSection = {
+      id: getSection(resume, "experience")?.id ?? crypto.randomUUID(),
+      type: "experience",
+      heading: "Experience",
+      items: experienceItemsToSectionItems(experienceItems.filter((e) => e.company || e.title || e.dates || e.description)),
+    };
+    sections = upsertSection(sections, experienceSection);
+
+    const educationFiltered = educationItems.filter((e) => e.school || e.degree || e.field || e.dates);
+    if (educationFiltered.length > 0) {
+      const educationSection: ResumeSection = {
+        id: getSection(resume, "education")?.id ?? crypto.randomUUID(),
+        type: "education",
+        heading: "Education",
+        items: educationItemsToSectionItems(educationFiltered),
+      };
+      sections = upsertSection(sections, educationSection);
+    } else {
+      sections = sections.filter((s) => s.type !== "education");
+    }
 
     const lastTailorSnapshot = pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot;
     updateMutation.mutate({
@@ -210,6 +335,27 @@ export default function ResumePage() {
         content: { ...resume.content, sections, lastTailorSnapshot },
       },
     });
+  };
+
+  const handleApplyTailoredSkills = () => {
+    if (tailorResult?.suggestedSkills?.length && resume) {
+      setSkillsBody(tailorResult.suggestedSkills.join(", "));
+      enterEditMode(resume, { skillsOverride: tailorResult.suggestedSkills.join(", ") });
+      setTailorOpen(false);
+      setTailorResult(null);
+      setJobDescriptionForTailor("");
+      toast.success("Skills applied. Save to keep changes.");
+    }
+  };
+
+  const handleAddBulletsToExperience = () => {
+    if (tailorResult?.bulletSuggestions?.length && resume) {
+      enterEditMode(resume, { experienceAppendBullets: tailorResult.bulletSuggestions });
+      setTailorOpen(false);
+      setTailorResult(null);
+      setJobDescriptionForTailor("");
+      toast.success("Bullets added to experience. Review and save.");
+    }
   };
 
   if (isLoading) {
@@ -300,6 +446,178 @@ export default function ResumePage() {
                 rows={4}
                 className="resize-y"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="resume-skills">Skills</Label>
+              <Textarea
+                id="resume-skills"
+                value={skillsBody}
+                onChange={(e) => setSkillsBody(e.target.value)}
+                placeholder="e.g. React, TypeScript, Node.js (comma or newline separated)"
+                rows={2}
+                className="resize-y"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Experience (work history)</Label>
+              <p className="text-xs text-[var(--muted-foreground)]">Add jobs with company, title, dates, and bullet points.</p>
+              {experienceItems.map((job, idx) => (
+                <div key={idx} className="rounded-lg border border-[var(--border)] p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Input
+                      placeholder="Company"
+                      value={job.company}
+                      onChange={(e) =>
+                        setExperienceItems((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, company: e.target.value } : p))
+                        )
+                      }
+                    />
+                    <Input
+                      placeholder="Job title"
+                      value={job.title}
+                      onChange={(e) =>
+                        setExperienceItems((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, title: e.target.value } : p))
+                        )
+                      }
+                    />
+                    <Input
+                      placeholder="Dates (e.g. 2020 – 2023)"
+                      value={job.dates}
+                      onChange={(e) =>
+                        setExperienceItems((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, dates: e.target.value } : p))
+                        )
+                      }
+                    />
+                  </div>
+                  <Textarea
+                    placeholder="Bullet points (one per line)"
+                    value={job.description}
+                    onChange={(e) =>
+                      setExperienceItems((prev) =>
+                        prev.map((p, i) => (i === idx ? { ...p, description: e.target.value } : p))
+                      )
+                    }
+                    rows={3}
+                    className="resize-y"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--destructive)]"
+                      onClick={() => setExperienceItems((prev) => prev.filter((_, i) => i !== idx))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setExperienceItems((prev) => [...prev, { company: "", title: "", dates: "", description: "" }])
+                }
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add job
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>Education (optional)</Label>
+              <p className="text-xs text-[var(--muted-foreground)]">No AI tailoring — edit manually.</p>
+              {educationItems.map((edu, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 space-y-2"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor={`edu-school-${idx}`} className="text-xs">School</Label>
+                      <Input
+                        id={`edu-school-${idx}`}
+                        value={edu.school}
+                        onChange={(e) =>
+                          setEducationItems((prev) =>
+                            prev.map((p, i) => (i === idx ? { ...p, school: e.target.value } : p))
+                          )
+                        }
+                        placeholder="University name"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`edu-dates-${idx}`} className="text-xs">Dates</Label>
+                      <Input
+                        id={`edu-dates-${idx}`}
+                        value={edu.dates}
+                        onChange={(e) =>
+                          setEducationItems((prev) =>
+                            prev.map((p, i) => (i === idx ? { ...p, dates: e.target.value } : p))
+                          )
+                        }
+                        placeholder="e.g. 2015 – 2019"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor={`edu-degree-${idx}`} className="text-xs">Degree</Label>
+                      <Input
+                        id={`edu-degree-${idx}`}
+                        value={edu.degree}
+                        onChange={(e) =>
+                          setEducationItems((prev) =>
+                            prev.map((p, i) => (i === idx ? { ...p, degree: e.target.value } : p))
+                          )
+                        }
+                        placeholder="e.g. B.S., M.A."
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`edu-field-${idx}`} className="text-xs">Field of study</Label>
+                      <Input
+                        id={`edu-field-${idx}`}
+                        value={edu.field}
+                        onChange={(e) =>
+                          setEducationItems((prev) =>
+                            prev.map((p, i) => (i === idx ? { ...p, field: e.target.value } : p))
+                          )
+                        }
+                        placeholder="e.g. Computer Science"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--destructive)]"
+                      onClick={() => setEducationItems((prev) => prev.filter((_, i) => i !== idx))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setEducationItems((prev) => [...prev, { school: "", degree: "", field: "", dates: "" }])
+                }
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add education
+              </Button>
+            </div>
+            <div className="space-y-2 pt-2">
               {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
                 <div className="mt-3 space-y-2">
                   <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
@@ -387,73 +705,181 @@ export default function ResumePage() {
             {sectionCount} section{sectionCount !== 1 ? "s" : ""}. Add more in edit mode later.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {resume.content?.sections?.map((s) => {
-            const snapshot = s.type === "summary" ? (resume.content?.lastTailorSnapshot) : undefined;
+        <CardContent className="space-y-6">
+          {(["summary", "skills", "experience", "education"] as const).map((sectionType) => {
+            const s = getSection(resume, sectionType) ?? {
+              id: "",
+              type: sectionType,
+              heading: sectionType === "summary" ? "Summary" : sectionType === "skills" ? "Skills" : sectionType === "experience" ? "Experience" : "Education",
+              body: "",
+              items: [],
+            };
+            const snapshot = sectionType === "summary" ? resume.content?.lastTailorSnapshot : undefined;
+            const hasContent = s.body || (s.items?.length ?? 0) > 0;
+            const showTailor = sectionType !== "education";
+
             return (
-              <div key={s.id}>
-                <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1">{s.heading}</h3>
-                {s.body && (
-                  <p className="text-sm text-[var(--muted-foreground)] whitespace-pre-wrap">{s.body}</p>
-                )}
-                {snapshot?.keywords?.length ? (
-                  <div className="mt-3 space-y-2">
-                    <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
-                    <div className="flex flex-wrap gap-2">
-                      {snapshot.keywords.map((k) => (
-                        <span
-                          key={k}
-                          className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+              <div key={s.id || sectionType} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-[var(--foreground)]">{s.heading}</h3>
+
+                {sectionType === "summary" && (
+                  <>
+                    {s.body && (
+                      <p className="text-sm text-[var(--muted-foreground)] whitespace-pre-wrap">{s.body}</p>
+                    )}
+                    {snapshot?.keywords?.length ? (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-xs font-medium text-[var(--muted-foreground)]">Key points for this role</p>
+                        <div className="flex flex-wrap gap-2">
+                          {snapshot.keywords.map((k) => (
+                            <span
+                              key={k}
+                              className="inline-flex items-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] px-3 py-1 text-xs font-medium"
+                            >
+                              {k}
+                            </span>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowSnapshotDetail((v) => !v)}
+                          className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                         >
-                          {k}
-                        </span>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowSnapshotDetail((v) => !v)}
-                      className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
-                      {showSnapshotDetail ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    </button>
-                    {showSnapshotDetail && (
-                      <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
-                        {snapshot.tailoredSummary && (
-                          <div>
-                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
-                            <p className="text-[var(--foreground)] whitespace-pre-wrap">{snapshot.tailoredSummary}</p>
-                          </div>
-                        )}
-                        {(snapshot.bulletSuggestions?.length ?? 0) > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
-                            <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
-                              {snapshot.bulletSuggestions!.map((b, i) => (
-                                <li key={i}>{b}</li>
-                              ))}
-                            </ul>
+                          <Info className="h-3.5 w-3.5" />
+                          {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
+                          {showSnapshotDetail ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                        </button>
+                        {showSnapshotDetail && (
+                          <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 text-sm space-y-2">
+                            {snapshot.tailoredSummary && (
+                              <div>
+                                <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Suggested summary applied</p>
+                                <p className="text-[var(--foreground)] whitespace-pre-wrap">{snapshot.tailoredSummary}</p>
+                              </div>
+                            )}
+                            {(snapshot.bulletSuggestions?.length ?? 0) > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Bullet ideas</p>
+                                <ul className="list-disc list-inside space-y-0.5 text-[var(--foreground)]">
+                                  {snapshot.bulletSuggestions!.map((b, i) => (
+                                    <li key={i}>{b}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
+                    ) : null}
+                  </>
+                )}
+
+                {sectionType === "skills" && (
+                  <>
+                    {s.body ? (
+                      <div className="flex flex-wrap gap-2">
+                        {s.body.split(/[\n,]+/).map((skill) => skill.trim()).filter(Boolean).map((skill) => (
+                          <span
+                            key={skill}
+                            className="inline-flex items-center rounded-full bg-[var(--muted)] text-[var(--foreground)] px-3 py-1 text-xs font-medium"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[var(--muted-foreground)] italic">No skills added yet.</p>
                     )}
-                  </div>
-                ) : null}
+                  </>
+                )}
+
+                {sectionType === "experience" && (
+                  <>
+                    {s.items?.length ? (
+                      <div className="space-y-4">
+                        {s.items.map((item, idx) => {
+                          const company = item["company"] ?? "";
+                          const title = item["title"] ?? "";
+                          const dates = item["dates"] ?? "";
+                          const description = item["description"] ?? item["bullets"] ?? "";
+                          return (
+                            <div key={idx}>
+                              <p className="text-sm font-medium text-[var(--foreground)]">
+                                {(title || company) && (
+                                  <span>{[title, company].filter(Boolean).join(" at ")}</span>
+                                )}
+                                {dates && (
+                                  <span className="text-[var(--muted-foreground)] font-normal ml-1">· {dates}</span>
+                                )}
+                              </p>
+                              {description && (
+                                <ul className="mt-1 list-disc list-inside text-sm text-[var(--muted-foreground)] space-y-0.5">
+                                  {description
+                                    .split(/\r?\n/)
+                                    .filter((l) => l.trim())
+                                    .map((line, i) => (
+                                      <li key={i}>{line.replace(/^[•\-]\s*/, "").trim()}</li>
+                                    ))}
+                                </ul>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[var(--muted-foreground)] italic">No experience entries yet.</p>
+                    )}
+                  </>
+                )}
+
+                {sectionType === "education" && (
+                  <>
+                    {s.items?.length ? (
+                      <div className="space-y-3">
+                        {s.items.map((item, idx) => {
+                          const school = item["school"] ?? "";
+                          const degree = item["degree"] ?? "";
+                          const field = item["field"] ?? "";
+                          const dates = item["dates"] ?? "";
+                          const degreeLine = [degree, field].filter(Boolean).join(" in ");
+                          const parts = [school, degreeLine, dates].filter(Boolean);
+                          return (
+                            <div key={idx}>
+                              <p className="text-sm font-medium text-[var(--foreground)]">
+                                {parts.join(" · ")}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[var(--muted-foreground)] italic">No education added yet.</p>
+                    )}
+                  </>
+                )}
+
+                {!hasContent && sectionType !== "summary" && (
+                  <p className="text-sm text-[var(--muted-foreground)] italic">Click Edit to add content.</p>
+                )}
+
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
+                  {showTailor && (
+                    <Button onClick={() => setTailorOpen(true)} variant="outline" size="sm" className="gap-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Tailor for a job
+                    </Button>
+                  )}
+                  <Button onClick={() => enterEditMode(resume)} variant="outline" size="sm">
+                    Edit
+                  </Button>
+                </div>
               </div>
             );
           })}
-          {(!resume.content?.sections?.length || sectionCount === 0) && (
-            <p className="text-sm text-[var(--muted-foreground)]">No sections yet. Click Edit to add content.</p>
-          )}
         </CardContent>
       </Card>
       <div className="flex flex-wrap gap-2">
-        <Button
-          onClick={() => setTailorOpen(true)}
-          variant="outline"
-          className="gap-2"
-        >
+        <Button onClick={() => setTailorOpen(true)} variant="outline" className="gap-2">
           <Sparkles className="h-4 w-4" />
           Tailor for a job
         </Button>
@@ -523,6 +949,23 @@ export default function ResumePage() {
                         </div>
                       </div>
                     )}
+                    {(tailorResult.suggestedSkills?.length ?? 0) > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                          Suggested skills
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(tailorResult.suggestedSkills ?? []).map((sk) => (
+                            <span
+                              key={sk}
+                              className="inline-flex items-center rounded-full bg-[var(--muted)] text-[var(--foreground)] px-3 py-1 text-xs font-medium"
+                            >
+                              {sk}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {(tailorResult.bulletSuggestions?.length ?? 0) > 0 && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
@@ -555,13 +998,25 @@ export default function ResumePage() {
               </div>
             )}
           </div>
-          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row px-6 pb-6 pt-2 border-t border-[var(--border)]">
+          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row flex-wrap px-6 pb-6 pt-2 border-t border-[var(--border)]">
             {tailorResult ? (
               <>
                 {tailorResult.tailoredSummary && (
                   <Button onClick={handleApplyTailoredSummary} className="gap-2">
                     <Save className="h-4 w-4" />
                     Apply to summary
+                  </Button>
+                )}
+                {(tailorResult.suggestedSkills?.length ?? 0) > 0 && (
+                  <Button onClick={handleApplyTailoredSkills} variant="outline" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Apply to skills
+                  </Button>
+                )}
+                {(tailorResult.bulletSuggestions?.length ?? 0) > 0 && (
+                  <Button onClick={handleAddBulletsToExperience} variant="outline" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Add bullets to experience
                   </Button>
                 )}
                 <Button variant="outline" onClick={() => setTailorResult(null)}>

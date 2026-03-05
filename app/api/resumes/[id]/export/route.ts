@@ -103,23 +103,83 @@ export async function GET(
 
       if (section.items?.length) {
         for (const item of section.items) {
-          const parts = Object.entries(item)
-            .filter(([, v]) => v != null && String(v).trim() !== "")
-            .map(([k, v]) => `${k}: ${v}`);
-          if (parts.length === 0) continue;
-          const itemText = parts.join(" · ");
-          doc.setFontSize(BODY_FONT_SIZE);
-          const itemLines = doc.splitTextToSize(
-            itemText,
-            doc.internal.pageSize.getWidth() - 2 * MARGIN
-          );
-          for (const line of itemLines) {
-            if (y > doc.internal.pageSize.getHeight() - MARGIN) {
-              doc.addPage();
-              y = MARGIN;
+          const company = (item.company ?? "").trim();
+          const title = (item.title ?? "").trim();
+          const dates = (item.dates ?? "").trim();
+          const description = (item.description ?? item.bullets ?? "").trim();
+          const school = (item.school ?? "").trim();
+          const degree = (item.degree ?? "").trim();
+          const field = (item.field ?? "").trim();
+          const isExperience = section.type === "experience" && (company || title || dates || description);
+          const isEducation = section.type === "education" && (school || degree || field || dates);
+
+          if (isEducation) {
+            const degreeLine = [degree, field].filter(Boolean).join(" in ");
+            const header = [school, degreeLine, dates].filter(Boolean).join(" · ");
+            if (header) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(BODY_FONT_SIZE);
+              const headerLines = doc.splitTextToSize(header, doc.internal.pageSize.getWidth() - 2 * MARGIN);
+              for (const line of headerLines) {
+                if (y > doc.internal.pageSize.getHeight() - MARGIN) {
+                  doc.addPage();
+                  y = MARGIN;
+                }
+                doc.text(line, MARGIN, y);
+                y += LINE_HEIGHT;
+              }
+              doc.setFont("helvetica", "normal");
             }
-            doc.text(line, MARGIN, y);
-            y += LINE_HEIGHT;
+          } else if (isExperience) {
+            const header = [company, title, dates].filter(Boolean).join(" · ");
+            if (header) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(BODY_FONT_SIZE);
+              const headerLines = doc.splitTextToSize(header, doc.internal.pageSize.getWidth() - 2 * MARGIN);
+              for (const line of headerLines) {
+                if (y > doc.internal.pageSize.getHeight() - MARGIN) {
+                  doc.addPage();
+                  y = MARGIN;
+                }
+                doc.text(line, MARGIN, y);
+                y += LINE_HEIGHT;
+              }
+              doc.setFont("helvetica", "normal");
+            }
+            if (description) {
+              const bulletLines = description.split(/\r?\n/).filter((l) => l.trim());
+              for (const bl of bulletLines) {
+                const prefixed = bl.trim().replace(/^[•\-]\s*/, "");
+                const lines = doc.splitTextToSize("• " + prefixed, doc.internal.pageSize.getWidth() - 2 * MARGIN - 6);
+                for (const line of lines) {
+                  if (y > doc.internal.pageSize.getHeight() - MARGIN) {
+                    doc.addPage();
+                    y = MARGIN;
+                  }
+                  doc.text(line, MARGIN + 4, y);
+                  y += LINE_HEIGHT;
+                }
+              }
+            }
+          } else if (!isExperience && !isEducation) {
+            const parts = Object.entries(item)
+              .filter(([, v]) => v != null && String(v).trim() !== "")
+              .map(([k, v]) => `${k}: ${v}`);
+            if (parts.length === 0) continue;
+            const itemText = parts.join(" · ");
+            doc.setFontSize(BODY_FONT_SIZE);
+            const itemLines = doc.splitTextToSize(
+              itemText,
+              doc.internal.pageSize.getWidth() - 2 * MARGIN
+            );
+            for (const line of itemLines) {
+              if (y > doc.internal.pageSize.getHeight() - MARGIN) {
+                doc.addPage();
+                y = MARGIN;
+              }
+              doc.text(line, MARGIN, y);
+              y += LINE_HEIGHT;
+            }
           }
           y += LINE_HEIGHT * 0.5;
         }
