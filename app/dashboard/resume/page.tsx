@@ -15,9 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download, Sparkles, Info, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Loader2, Plus, FileText, Save, Download, Eye, Sparkles, Info, ChevronDown, ChevronUp, Trash2, Upload } from "lucide-react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import type { Resume, ResumeContent, ResumeSection, LastTailorSnapshot } from "@/types";
+import { scoreResume } from "@/lib/resume-score";
 
 /** One work history entry for the Experience section. */
 export interface ExperienceItem {
@@ -85,11 +86,11 @@ async function fetchResume(): Promise<Resume | null> {
   return data.data;
 }
 
-async function createResume(): Promise<Resume> {
+async function createResume(payload?: { title?: string; content?: ResumeContent }): Promise<Resume> {
   const res = await fetch("/api/resumes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({}),
+    body: JSON.stringify(payload ?? {}),
   });
   const data = await res.json();
   if (!data.success) throw new Error(data.error || "Failed to create resume");
@@ -109,6 +110,26 @@ async function updateResume(id: string, payload: { title?: string; content?: Res
 
 type SectionType = "summary" | "skills" | "experience" | "education";
 
+/** Score card shown at top so users can improve their resume and see the score update. */
+function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[] }) {
+  return (
+    <Card className="rounded-xl border-[var(--border)] bg-[var(--card)] p-4">
+      <h3 className="text-sm font-semibold text-[var(--foreground)] mb-2">Resume score</h3>
+      <p className="text-2xl font-bold text-[var(--primary)] mb-2">{score}/100</p>
+      <p className="text-xs text-[var(--muted-foreground)] mb-2">
+        Based on best practices: section completeness, STAR-style bullets, and quantifiable results. Make edits below to improve your score.
+      </p>
+      {feedback.length > 0 && (
+        <ul className="text-sm text-[var(--foreground)] space-y-1 list-disc list-inside">
+          {feedback.map((f, i) => (
+            <li key={i}>{f}</li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 export default function ResumePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
@@ -120,6 +141,11 @@ export default function ResumePage() {
   const [experienceItems, setExperienceItems] = useState<ExperienceItem[]>([]);
   const [educationItems, setEducationItems] = useState<EducationItem[]>([]);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [parsedScore, setParsedScore] = useState<number | null>(null);
+  const [parsedFeedback, setParsedFeedback] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [tailorOpen, setTailorOpen] = useState(false);
   const [jobDescriptionForTailor, setJobDescriptionForTailor] = useState("");
   const [tailorResult, setTailorResult] = useState<{
@@ -294,6 +320,8 @@ export default function ResumePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume"] });
       setPendingTailorSnapshot(null);
+      setParsedScore(null);
+      setParsedFeedback([]);
       toast.success("Resume saved");
       setIsEditing(false);
     },
@@ -303,7 +331,7 @@ export default function ResumePage() {
   });
 
   const handleCreate = () => {
-    createMutation.mutate();
+    createMutation.mutate(undefined);
   };
 
   const handleDownloadPdf = async () => {
@@ -329,6 +357,35 @@ export default function ResumePage() {
       });
     } finally {
       setIsExportingPdf(false);
+    }
+  };
+
+  const handlePreviewPdf = async () => {
+    if (!resume) return;
+    setIsPreviewingPdf(true);
+    try {
+      const res = await fetch(`/api/resumes/${resume.id}/export?format=pdf`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Export failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const previewWindow = window.open(url, "_blank", "noopener,noreferrer");
+      if (previewWindow) {
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      } else {
+        URL.revokeObjectURL(url);
+        toast.error("Preview blocked", {
+          description: "Allow pop-ups for this site to preview the PDF.",
+        });
+      }
+    } catch (err) {
+      toast.error("Could not preview PDF", {
+        description: err instanceof Error ? err.message : "Export failed",
+      });
+    } finally {
+      setIsPreviewingPdf(false);
     }
   };
 
@@ -381,8 +438,61 @@ export default function ResumePage() {
       setEducationItems(sectionToEducationItems(getSection(resume, "education")) || [{ school: "", degree: "", field: "", dates: "" }]);
     }
     setShowSnapshotDetail(false);
+    setParsedScore(null);
+    setParsedFeedback([]);
     setIsEditing(false);
   };
+
+  /** Apply parsed resume content to form state and enter edit mode (for upload flow). */
+  const applyParsedContentToForm = useCallback((content: ResumeContent, existingTitle?: string) => {
+    const fakeResume: Resume = {
+      id: "",
+      userId: "",
+      title: existingTitle ?? "My Resume",
+      content: content,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setTitle(fakeResume.title);
+    setSummaryBody(getSection(fakeResume, "summary")?.body ?? "");
+    setSkillsBody(getSection(fakeResume, "skills")?.body ?? "");
+    const expItems = sectionToExperienceItems(getSection(fakeResume, "experience"));
+    setExperienceItems(expItems.length ? expItems : [{ company: "", title: "", dates: "", description: "" }]);
+    const eduItems = sectionToEducationItems(getSection(fakeResume, "education"));
+    setEducationItems(eduItems.length ? eduItems : [{ school: "", degree: "", field: "", dates: "" }]);
+    setIsEditing(true);
+  }, []);
+
+  const handleUploadResume = useCallback(async (file: File) => {
+    setIsUploadingResume(true);
+    setParsedScore(null);
+    setParsedFeedback([]);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/resumes/parse", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error ?? "Parse failed");
+      const { content, score, feedback } = data.data;
+      setParsedScore(score);
+      setParsedFeedback(Array.isArray(feedback) ? feedback : []);
+
+      if (!resume) {
+        createMutation.mutate({ content });
+        toast.success("Resume imported. Review the sections and save any changes.");
+      } else {
+        applyParsedContentToForm(content, resume.title);
+        toast.success("Resume parsed. Review the sections below and click Save to keep changes.");
+      }
+    } catch (err) {
+      toast.error("Could not parse resume", {
+        description: err instanceof Error ? err.message : "Use a PDF or DOCX file with selectable text.",
+      });
+    } finally {
+      setIsUploadingResume(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }, [resume, createMutation, queryClient, enterEditMode, applyParsedContentToForm]);
 
   const upsertSection = (sections: ResumeSection[], section: ResumeSection): ResumeSection[] => {
     const idx = sections.findIndex((s) => s.type === section.type);
@@ -391,6 +501,35 @@ export default function ResumePage() {
     else next.push(section);
     return next;
   };
+
+  /** Build ResumeContent from current form state for live scoring in edit mode. */
+  const contentFromFormState = useMemo((): ResumeContent => {
+    const sections: ResumeSection[] = [];
+    sections.push({ id: "summary", type: "summary", heading: "Summary", body: summaryBody });
+    sections.push({ id: "skills", type: "skills", heading: "Skills", body: skillsBody });
+    sections.push({
+      id: "experience",
+      type: "experience",
+      heading: "Experience",
+      items: experienceItemsToSectionItems(experienceItems.filter((e) => e.company || e.title || e.dates || e.description)),
+    });
+    const educationFiltered = educationItems.filter((e) => e.school || e.degree || e.field || e.dates);
+    if (educationFiltered.length > 0) {
+      sections.push({
+        id: "education",
+        type: "education",
+        heading: "Education",
+        items: educationItemsToSectionItems(educationFiltered),
+      });
+    }
+    return { sections };
+  }, [summaryBody, skillsBody, experienceItems, educationItems]);
+
+  /** Live resume score from current content (saved in view mode, form state in edit mode). */
+  const liveScoreResult = useMemo(() => {
+    const content = isEditing ? contentFromFormState : (resume?.content ?? { sections: [] });
+    return scoreResume(content);
+  }, [isEditing, contentFromFormState, resume?.content]);
 
   const handleSave = () => {
     if (!resume) return;
@@ -497,22 +636,49 @@ export default function ResumePage() {
           <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
             No resume yet
           </h2>
-          <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-8">
-            Create your first resume to start building and editing sections.
+          <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-6">
+            Upload your existing resume (PDF or DOCX) to import sections, or create one from scratch.
           </p>
-          <Button
-            onClick={handleCreate}
-            disabled={createMutation.isPending}
-            size="lg"
-            className="gap-2"
-          >
-            {createMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            Create resume
-          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleUploadResume(file);
+            }}
+          />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingResume}
+              variant="default"
+              size="lg"
+              className="gap-2"
+            >
+              {isUploadingResume ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Upload resume
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={createMutation.isPending || isUploadingResume}
+              variant="outline"
+              size="lg"
+              className="gap-2"
+            >
+              {createMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Create from scratch
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -523,6 +689,7 @@ export default function ResumePage() {
   if (isEditing) {
     return (
       <div className="space-y-6">
+        <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
         <div>
           <h1 className="text-2xl font-bold text-[var(--foreground)]">Edit resume</h1>
           <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
@@ -797,6 +964,7 @@ export default function ResumePage() {
 
   return (
     <div className="space-y-6">
+      <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
       <div>
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Resume</h1>
         <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
@@ -1048,10 +1216,46 @@ export default function ResumePage() {
           })}
         </CardContent>
       </Card>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUploadResume(file);
+        }}
+      />
       <div className="flex flex-wrap gap-2">
         <Button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploadingResume}
+          variant="outline"
+          className="gap-2"
+        >
+          {isUploadingResume ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Upload className="h-4 w-4" />
+          )}
+          Import from file
+        </Button>
+        <Button
+          onClick={handlePreviewPdf}
+          disabled={isPreviewingPdf || isExportingPdf}
+          variant="outline"
+          className="gap-2"
+        >
+          {isPreviewingPdf ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+          Preview
+        </Button>
+        <Button
           onClick={handleDownloadPdf}
-          disabled={isExportingPdf}
+          disabled={isExportingPdf || isPreviewingPdf}
           variant="outline"
           className="gap-2"
         >
