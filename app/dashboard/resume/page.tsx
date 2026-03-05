@@ -107,9 +107,13 @@ async function updateResume(id: string, payload: { title?: string; content?: Res
   return data.data;
 }
 
+type SectionType = "summary" | "skills" | "experience" | "education";
+
 export default function ResumePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  /** When set, only this section shows inline edit; others stay in view mode. */
+  const [editingSection, setEditingSection] = useState<SectionType | null>(null);
   const [title, setTitle] = useState("");
   const [summaryBody, setSummaryBody] = useState("");
   const [skillsBody, setSkillsBody] = useState("");
@@ -169,6 +173,108 @@ export default function ResumePage() {
     }
     setIsEditing(true);
   }, []);
+
+  /** Open inline edit for a single section; syncs that section's state from resume (or options). */
+  const enterSectionEdit = useCallback((
+    r: Resume | null,
+    sectionType: SectionType,
+    options?: { summaryOverride?: string; skillsOverride?: string; experienceAppendBullets?: string[] }
+  ) => {
+    if (!r) return;
+    if (sectionType === "summary") {
+      setSummaryBody(options?.summaryOverride ?? getSection(r, "summary")?.body ?? "");
+    }
+    if (sectionType === "skills") {
+      setSkillsBody(options?.skillsOverride ?? getSection(r, "skills")?.body ?? "");
+    }
+    if (sectionType === "experience") {
+      const items = sectionToExperienceItems(getSection(r, "experience"));
+      if (options?.experienceAppendBullets?.length) {
+        const bulletText = options.experienceAppendBullets.map((b) => (b.startsWith("•") ? b : `• ${b}`)).join("\n");
+        if (items.length > 0) {
+          setExperienceItems(items.map((it, i) =>
+            i === 0 ? { ...it, description: it.description ? `${it.description}\n${bulletText}` : bulletText } : it
+          ));
+        } else {
+          setExperienceItems([{ company: "Relevant experience", title: "", dates: "", description: bulletText }]);
+        }
+      } else {
+        setExperienceItems(items.length ? items : [{ company: "", title: "", dates: "", description: "" }]);
+      }
+    }
+    if (sectionType === "education") {
+      const edu = sectionToEducationItems(getSection(r, "education"));
+      setEducationItems(edu.length ? edu : [{ school: "", degree: "", field: "", dates: "" }]);
+    }
+    setEditingSection(sectionType);
+  }, []);
+
+  const handleCancelSectionEdit = useCallback((r: Resume | null, sectionType: SectionType) => {
+    if (r) {
+      if (sectionType === "summary") setSummaryBody(getSection(r, "summary")?.body ?? "");
+      if (sectionType === "skills") setSkillsBody(getSection(r, "skills")?.body ?? "");
+      if (sectionType === "experience") setExperienceItems(sectionToExperienceItems(getSection(r, "experience")) || [{ company: "", title: "", dates: "", description: "" }]);
+      if (sectionType === "education") setEducationItems(sectionToEducationItems(getSection(r, "education")) || [{ school: "", degree: "", field: "", dates: "" }]);
+    }
+    setEditingSection(null);
+  }, []);
+
+  const handleSaveSection = (sectionType: SectionType) => {
+    if (!resume) return;
+    let sections: ResumeSection[] = [...(resume.content?.sections ?? [])];
+
+    if (sectionType === "summary") {
+      sections = upsertSection(sections, {
+        id: getSection(resume, "summary")?.id ?? crypto.randomUUID(),
+        type: "summary",
+        heading: "Summary",
+        body: summaryBody,
+      });
+    }
+    if (sectionType === "skills") {
+      sections = upsertSection(sections, {
+        id: getSection(resume, "skills")?.id ?? crypto.randomUUID(),
+        type: "skills",
+        heading: "Skills",
+        body: skillsBody,
+      });
+    }
+    if (sectionType === "experience") {
+      sections = upsertSection(sections, {
+        id: getSection(resume, "experience")?.id ?? crypto.randomUUID(),
+        type: "experience",
+        heading: "Experience",
+        items: experienceItemsToSectionItems(experienceItems.filter((e) => e.company || e.title || e.dates || e.description)),
+      });
+    }
+    if (sectionType === "education") {
+      const educationFiltered = educationItems.filter((e) => e.school || e.degree || e.field || e.dates);
+      if (educationFiltered.length > 0) {
+        sections = upsertSection(sections, {
+          id: getSection(resume, "education")?.id ?? crypto.randomUUID(),
+          type: "education",
+          heading: "Education",
+          items: educationItemsToSectionItems(educationFiltered),
+        });
+      } else {
+        sections = sections.filter((s) => s.type !== "education");
+      }
+    }
+
+    updateMutation.mutate(
+      {
+        id: resume.id,
+        payload: {
+          content: { ...resume.content, sections, lastTailorSnapshot: pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot },
+        },
+      },
+      {
+        onSuccess: () => {
+          setEditingSection(null);
+        },
+      }
+    );
+  };
 
   const createMutation = useMutation({
     mutationFn: createResume,
@@ -258,7 +364,7 @@ export default function ResumePage() {
         tailoredSummary: tailorResult.tailoredSummary,
         bulletSuggestions: tailorResult.bulletSuggestions,
       });
-      enterEditMode(resume, { summaryOverride: tailorResult.tailoredSummary });
+      enterSectionEdit(resume, "summary", { summaryOverride: tailorResult.tailoredSummary });
       setTailorOpen(false);
       setTailorResult(null);
       setJobDescriptionForTailor("");
@@ -339,8 +445,7 @@ export default function ResumePage() {
 
   const handleApplyTailoredSkills = () => {
     if (tailorResult?.suggestedSkills?.length && resume) {
-      setSkillsBody(tailorResult.suggestedSkills.join(", "));
-      enterEditMode(resume, { skillsOverride: tailorResult.suggestedSkills.join(", ") });
+      enterSectionEdit(resume, "skills", { skillsOverride: tailorResult.suggestedSkills.join(", ") });
       setTailorOpen(false);
       setTailorResult(null);
       setJobDescriptionForTailor("");
@@ -350,7 +455,7 @@ export default function ResumePage() {
 
   const handleAddBulletsToExperience = () => {
     if (tailorResult?.bulletSuggestions?.length && resume) {
-      enterEditMode(resume, { experienceAppendBullets: tailorResult.bulletSuggestions });
+      enterSectionEdit(resume, "experience", { experienceAppendBullets: tailorResult.bulletSuggestions });
       setTailorOpen(false);
       setTailorResult(null);
       setJobDescriptionForTailor("");
@@ -717,11 +822,74 @@ export default function ResumePage() {
             const snapshot = sectionType === "summary" ? resume.content?.lastTailorSnapshot : undefined;
             const hasContent = s.body || (s.items?.length ?? 0) > 0;
             const showTailor = sectionType !== "education";
+            const isEditingThisSection = editingSection === sectionType;
 
             return (
               <div key={s.id || sectionType} className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-[var(--foreground)]">{s.heading}</h3>
 
+                {isEditingThisSection ? (
+                  <>
+                    {sectionType === "summary" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="inline-summary" className="sr-only">Summary</Label>
+                        <Textarea id="inline-summary" value={summaryBody} onChange={(e) => setSummaryBody(e.target.value)} placeholder="Brief professional summary..." rows={4} className="resize-y" />
+                      </div>
+                    )}
+                    {sectionType === "skills" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="inline-skills" className="sr-only">Skills</Label>
+                        <Textarea id="inline-skills" value={skillsBody} onChange={(e) => setSkillsBody(e.target.value)} placeholder="e.g. React, TypeScript (comma or newline separated)" rows={2} className="resize-y" />
+                      </div>
+                    )}
+                    {sectionType === "experience" && (
+                      <div className="space-y-2">
+                        {experienceItems.map((job, idx) => (
+                          <div key={idx} className="rounded-lg border border-[var(--border)] p-3 space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <Input placeholder="Company" value={job.company} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, company: e.target.value } : p)))} />
+                              <Input placeholder="Job title" value={job.title} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, title: e.target.value } : p)))} />
+                              <Input placeholder="Dates" value={job.dates} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, dates: e.target.value } : p)))} />
+                            </div>
+                            <Textarea placeholder="Bullet points (one per line)" value={job.description} onChange={(e) => setExperienceItems((prev) => prev.map((p, i) => (i === idx ? { ...p, description: e.target.value } : p)))} rows={2} className="resize-y" />
+                            <div className="flex justify-end">
+                              <Button type="button" variant="ghost" size="sm" className="text-[var(--destructive)]" onClick={() => setExperienceItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={() => setExperienceItems((prev) => [...prev, { company: "", title: "", dates: "", description: "" }])}><Plus className="h-4 w-4 mr-1" /> Add job</Button>
+                      </div>
+                    )}
+                    {sectionType === "education" && (
+                      <div className="space-y-2">
+                        {educationItems.map((edu, idx) => (
+                          <div key={idx} className="rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 p-3 space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div className="space-y-1"><Label className="text-xs">School</Label><Input value={edu.school} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, school: e.target.value } : p)))} placeholder="University name" /></div>
+                              <div className="space-y-1"><Label className="text-xs">Dates</Label><Input value={edu.dates} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, dates: e.target.value } : p)))} placeholder="e.g. 2015 – 2019" /></div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div className="space-y-1"><Label className="text-xs">Degree</Label><Input value={edu.degree} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, degree: e.target.value } : p)))} placeholder="e.g. B.S., M.A." /></div>
+                              <div className="space-y-1"><Label className="text-xs">Field of study</Label><Input value={edu.field} onChange={(e) => setEducationItems((prev) => prev.map((p, i) => (i === idx ? { ...p, field: e.target.value } : p)))} placeholder="e.g. Computer Science" /></div>
+                            </div>
+                            <div className="flex justify-end">
+                              <Button type="button" variant="ghost" size="sm" className="text-[var(--destructive)]" onClick={() => setEducationItems((prev) => prev.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={() => setEducationItems((prev) => [...prev, { school: "", degree: "", field: "", dates: "" }])}><Plus className="h-4 w-4 mr-1" /> Add education</Button>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--border)]">
+                      <Button onClick={() => handleSaveSection(sectionType)} disabled={updateMutation.isPending} size="sm" className="gap-1">
+                        {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                        Save
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleCancelSectionEdit(resume, sectionType)}>Cancel</Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
                 {sectionType === "summary" && (
                   <>
                     {s.body && (
@@ -869,20 +1037,18 @@ export default function ResumePage() {
                       Tailor for a job
                     </Button>
                   )}
-                  <Button onClick={() => enterEditMode(resume)} variant="outline" size="sm">
+                  <Button onClick={() => enterSectionEdit(resume, sectionType)} variant="outline" size="sm">
                     Edit
                   </Button>
                 </div>
+                  </>
+                )}
               </div>
             );
           })}
         </CardContent>
       </Card>
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => setTailorOpen(true)} variant="outline" className="gap-2">
-          <Sparkles className="h-4 w-4" />
-          Tailor for a job
-        </Button>
         <Button
           onClick={handleDownloadPdf}
           disabled={isExportingPdf}
