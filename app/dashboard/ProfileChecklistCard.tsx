@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ClipboardList, Check, Circle, Loader2, Pencil, FileText, Linkedin, Github, Briefcase } from "lucide-react";
+import { ClipboardList, Check, Loader2, Pencil, FileText, Linkedin, Github, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";

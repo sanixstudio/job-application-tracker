@@ -145,8 +145,6 @@ export default function ResumePage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
-  const [parsedScore, setParsedScore] = useState<number | null>(null);
-  const [parsedFeedback, setParsedFeedback] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tailorOpen, setTailorOpen] = useState(false);
   const [jobDescriptionForTailor, setJobDescriptionForTailor] = useState("");
@@ -322,8 +320,6 @@ export default function ResumePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume"] });
       setPendingTailorSnapshot(null);
-      setParsedScore(null);
-      setParsedFeedback([]);
       toast.success("Resume saved");
       setIsEditing(false);
     },
@@ -440,8 +436,6 @@ export default function ResumePage() {
       setEducationItems(sectionToEducationItems(getSection(resume, "education")) || [{ school: "", degree: "", field: "", dates: "" }]);
     }
     setShowSnapshotDetail(false);
-    setParsedScore(null);
-    setParsedFeedback([]);
     setIsEditing(false);
   };
 
@@ -467,17 +461,13 @@ export default function ResumePage() {
 
   const handleUploadResume = useCallback(async (file: File) => {
     setIsUploadingResume(true);
-    setParsedScore(null);
-    setParsedFeedback([]);
     try {
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch("/api/resumes/parse", { method: "POST", body: formData });
       const data = await res.json();
       if (!data.success) throw new Error(data.error ?? "Parse failed");
-      const { content, score, feedback } = data.data;
-      setParsedScore(score);
-      setParsedFeedback(Array.isArray(feedback) ? feedback : []);
+      const { content } = data.data;
 
       if (!resume) {
         createMutation.mutate({ content });
@@ -494,7 +484,7 @@ export default function ResumePage() {
       setIsUploadingResume(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }, [resume, createMutation, queryClient, enterEditMode, applyParsedContentToForm]);
+  }, [resume, createMutation, applyParsedContentToForm]);
 
   const upsertSection = (sections: ResumeSection[], section: ResumeSection): ResumeSection[] => {
     const idx = sections.findIndex((s) => s.type === section.type);

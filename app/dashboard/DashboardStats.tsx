@@ -73,7 +73,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           aria-label={`${title}: ${stats[valueKey]}`}
           className={`rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md hover:border-(--border)/80 ${cardAccent}`}
         >
-          <CardContent className="p-5 flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <span
                 className={`inline-flex size-12 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
