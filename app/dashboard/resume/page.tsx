@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download, Eye, Sparkles, Info, ChevronDown, ChevronUp, Trash2, Upload } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download, Eye, Sparkles, Info, ChevronDown, ChevronUp, ChevronRight, Trash2, Upload, Trophy, TrendingUp, AlertCircle, Lightbulb, Briefcase, GraduationCap, AlignLeft, Wrench, AlertTriangle } from "lucide-react";
 import { useState, useCallback, useRef, useMemo } from "react";
 import type { Resume, ResumeContent, ResumeSection, LastTailorSnapshot } from "@/types";
 import { scoreResume } from "@/lib/resume-score";
@@ -110,24 +110,134 @@ async function updateResume(id: string, payload: { title?: string; content?: Res
 
 type SectionType = "summary" | "skills" | "experience" | "education";
 
-/** Score card shown at top so users can improve their resume and see the score update. */
+const FEEDBACK_PREVIEW_COUNT = 3;
+
+/** Stylish resume score card: circular gauge, band badge, expandable tips. */
 function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[] }) {
+  const [showAllTips, setShowAllTips] = useState(false);
+  const scoreBand = score >= 70 ? "high" : score >= 40 ? "mid" : "low";
+  const scoreLabel = scoreBand === "high" ? "Strong" : scoreBand === "mid" ? "Good start" : "Needs work";
+  const BandIcon = scoreBand === "high" ? Trophy : scoreBand === "mid" ? TrendingUp : AlertCircle;
+
+  const ringColor =
+    scoreBand === "high"
+      ? "var(--primary)"
+      : scoreBand === "low"
+        ? "var(--destructive)"
+        : "var(--chart-2)";
+  const bandBg =
+    scoreBand === "high"
+      ? "bg-(--primary)/10 text-(--primary)"
+      : scoreBand === "low"
+        ? "bg-(--destructive)/10 text-(--destructive)"
+        : "bg-(--accent) text-(--accent-foreground)";
+  const borderAccent =
+    scoreBand === "high"
+      ? "border-(--primary)/20"
+      : scoreBand === "low"
+        ? "border-(--destructive)/20"
+        : "border-(--chart-2)/20";
+  const cardGradient =
+    scoreBand === "high"
+      ? "bg-gradient-to-b from-(--primary)/5 to-transparent"
+      : scoreBand === "low"
+        ? "bg-gradient-to-b from-(--destructive)/5 to-transparent"
+        : "";
+
+  const circumference = 2 * Math.PI * 36;
+  const strokeDashoffset = circumference * (1 - score / 100);
+
+  const visibleFeedback = showAllTips ? feedback : feedback.slice(0, FEEDBACK_PREVIEW_COUNT);
+  const hasMoreTips = feedback.length > FEEDBACK_PREVIEW_COUNT && !showAllTips;
+
   return (
-    <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm p-4 transition-all duration-200 hover:shadow-md">
-      <h3 className="text-sm font-semibold text-(--foreground) mb-2">Resume score</h3>
-      <p className="text-2xl font-bold text-(--primary) mb-2 tabular-nums">
-        {score}/100
-      </p>
-      <p className="text-xs text-(--muted-foreground) mb-2">
-        Based on best practices: section completeness, STAR-style bullets, and quantifiable results. Make edits below to improve your score.
-      </p>
-      {feedback.length > 0 && (
-        <ul className="text-sm text-(--foreground) space-y-1 list-disc list-inside">
-          {feedback.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
-        </ul>
-      )}
+    <Card
+      className={`rounded-2xl border-2 ${borderAccent} bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${cardGradient}`}
+      aria-live="polite"
+      aria-label={`Resume score: ${score} out of 100, ${scoreLabel}`}
+    >
+      <div className="p-6 sm:p-7">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          {/* Circular score gauge */}
+          <div className="flex shrink-0 justify-center sm:justify-start">
+            <div className="relative" style={{ width: 100, height: 100 }}>
+              <svg
+                className="-rotate-90 size-full"
+                viewBox="0 0 100 100"
+                aria-hidden
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="36"
+                  fill="none"
+                  stroke="var(--muted)"
+                  strokeWidth="8"
+                  className="transition-opacity"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="36"
+                  fill="none"
+                  stroke={ringColor}
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  className="transition-[stroke-dashoffset] duration-700 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-bold tabular-nums text-(--foreground) leading-none">
+                  {score}
+                </span>
+                <span className="text-[10px] font-medium text-(--muted-foreground) mt-0.5">out of 100</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-0 flex-1 space-y-3 text-center sm:text-left">
+            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${bandBg}`}>
+              <BandIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {scoreLabel}
+            </div>
+            <p className="text-sm text-(--muted-foreground) leading-relaxed">
+              Based on completeness, STAR-style bullets, and quantifiable results. Edit sections below to improve.
+            </p>
+          </div>
+        </div>
+
+        {/* Tips to improve */}
+        {feedback.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-(--border)">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-(--foreground) mb-3">
+              <Lightbulb className="h-4 w-4 text-(--primary)" aria-hidden />
+              Tips to improve
+            </h4>
+            <ul className="space-y-2.5" role="list">
+              {visibleFeedback.map((f, i) => (
+                <li
+                  key={i}
+                  className="flex gap-3 text-sm text-(--foreground) leading-snug"
+                >
+                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--primary)/60" aria-hidden />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            {hasMoreTips && (
+              <button
+                type="button"
+                onClick={() => setShowAllTips(true)}
+                className="mt-3 text-xs font-medium text-(--primary) hover:underline focus-visible:outline focus-visible:ring-2 focus-visible:ring-(--ring) focus-visible:ring-offset-2 rounded"
+              >
+                Show {feedback.length - FEEDBACK_PREVIEW_COUNT} more tips
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
@@ -157,6 +267,15 @@ export default function ResumePage() {
   const [isTailoring, setIsTailoring] = useState(false);
   const [pendingTailorSnapshot, setPendingTailorSnapshot] = useState<LastTailorSnapshot | null>(null);
   const [showSnapshotDetail, setShowSnapshotDetail] = useState(false);
+  /** View mode: which sections are expanded. Default all true. */
+  const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>({
+    summary: true,
+    skills: true,
+    experience: true,
+    education: true,
+  });
+  const toggleSection = (key: string) =>
+    setSectionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const { data: resume, isLoading, error } = useQuery({
     queryKey: ["resume"],
@@ -596,63 +715,84 @@ export default function ResumePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-(--muted-foreground)" />
+      <div className="space-y-8">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
+        </header>
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
+          <div className="flex flex-col items-center justify-center py-20 gap-5" aria-live="polite">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-(--primary)/10">
+              <Loader2 className="h-7 w-7 animate-spin text-(--primary)" aria-hidden />
+            </div>
+            <p className="text-sm font-medium text-(--muted-foreground)">Loading resume…</p>
+          </div>
+        </Card>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="rounded-2xl border-(--border) p-6">
-        <p className="text-sm text-(--destructive)">
-          Failed to load resume. {String(error)}
-        </p>
-      </Card>
+      <div className="space-y-8">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
+        </header>
+        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-gradient-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
+          <div className="p-6 flex gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--destructive)/10">
+              <AlertTriangle className="h-6 w-6 text-(--destructive)" aria-hidden />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-(--foreground)">Couldn’t load resume</h3>
+              <p className="mt-1 text-sm text-(--destructive)" role="alert">
+                {String(error)}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   if (!resume) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-(--foreground)">Resume</h1>
-          <p className="text-sm text-(--muted-foreground) mt-0.5">
-            Create your resume to export or tailor per job later.
+      <div className="space-y-8">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
+          <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
+            Create your resume to export as PDF or tailor it per job later.
           </p>
-        </div>
-        <Card className="rounded-2xl border border-(--border) bg-(--card) p-14 text-center">
-          <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-(--muted) text-(--muted-foreground)">
-            <FileText className="size-7" strokeWidth={1.5} />
+        </header>
+        <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+          <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+            <FileText className="size-10" strokeWidth={1.5} aria-hidden />
           </div>
-          <h2 className="text-lg font-semibold text-(--foreground) mb-2">
-            No resume yet
-          </h2>
-          <p className="text-sm text-(--muted-foreground) max-w-sm mx-auto mb-6">
-            Upload your existing resume (PDF or DOCX) to import sections, or create one from scratch.
+          <h2 className="text-xl font-semibold text-(--foreground)">No resume yet</h2>
+          <p className="mt-2 text-sm text-(--muted-foreground) max-w-sm mx-auto leading-relaxed">
+            Upload a PDF or DOCX to import sections, or start from scratch.
           </p>
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
+            aria-hidden
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleUploadResume(file);
             }}
           />
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingResume}
-              variant="default"
               size="lg"
               className="gap-2"
             >
               {isUploadingResume ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
-                <Upload className="h-4 w-4" />
+                <Upload className="h-4 w-4" aria-hidden />
               )}
               Upload resume
             </Button>
@@ -664,9 +804,9 @@ export default function ResumePage() {
               className="gap-2"
             >
               {createMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" aria-hidden />
               )}
               Create from scratch
             </Button>
@@ -680,39 +820,53 @@ export default function ResumePage() {
 
   if (isEditing) {
     return (
-      <div className="space-y-6">
-        <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
-        <div>
-          <h1 className="text-2xl font-bold text-(--foreground)">Edit resume</h1>
-          <p className="text-sm text-(--muted-foreground) mt-0.5">
-            Update your title and sections. More section types coming soon.
-          </p>
-        </div>
-        <Card className="rounded-2xl border border-(--border) bg-(--card) p-6">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="resume-title">Title</Label>
+      <>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 pb-24">
+          <div className="min-w-0 space-y-6">
+            <header>
+              <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Edit resume</h1>
+              <p className="mt-1 text-sm text-(--muted-foreground)">
+                Update your title and sections. Save when ready.
+              </p>
+            </header>
+            <div className="lg:hidden">
+              <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
+            </div>
+            <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/[0.03] to-transparent shadow-lg overflow-hidden">
+          <div className="p-6 sm:p-7 space-y-8">
+            <section className="space-y-2 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="resume-title-label">
+              <Label id="resume-title-label" htmlFor="resume-title" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
+                <FileText className="h-4 w-4 text-(--primary)" aria-hidden /> Title
+              </Label>
               <Input
                 id="resume-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="My Resume"
                 className="max-w-md"
+                aria-describedby="resume-title-hint"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="resume-summary">Summary</Label>
+              <p id="resume-title-hint" className="text-xs text-(--muted-foreground)">Shown at the top of your resume.</p>
+            </section>
+
+            <section className="space-y-2 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="resume-summary-label">
+              <Label id="resume-summary-label" htmlFor="resume-summary" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
+                <AlignLeft className="h-4 w-4 text-(--primary)" aria-hidden /> Summary
+              </Label>
               <Textarea
                 id="resume-summary"
                 value={summaryBody}
                 onChange={(e) => setSummaryBody(e.target.value)}
-                placeholder="Brief professional summary..."
+                placeholder="Brief professional summary (2–4 sentences)."
                 rows={4}
-                className="resize-y"
+                className="resize-y min-h-24"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="resume-skills">Skills</Label>
+            </section>
+
+            <section className="space-y-2 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="resume-skills-label">
+              <Label id="resume-skills-label" htmlFor="resume-skills" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
+                <Wrench className="h-4 w-4 text-(--primary)" aria-hidden /> Skills
+              </Label>
               <Textarea
                 id="resume-skills"
                 value={skillsBody}
@@ -720,13 +874,20 @@ export default function ResumePage() {
                 placeholder="e.g. React, TypeScript, Node.js (comma or newline separated)"
                 rows={2}
                 className="resize-y"
+                aria-describedby="resume-skills-hint"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Experience (work history)</Label>
-              <p className="text-xs text-(--muted-foreground)">Add jobs with company, title, dates, and bullet points.</p>
+              <p id="resume-skills-hint" className="text-xs text-(--muted-foreground)">List skills recruiters and ATS look for.</p>
+            </section>
+
+            <section className="space-y-3 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="experience-label">
+              <div>
+                <Label id="experience-label" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
+                  <Briefcase className="h-4 w-4 text-(--primary)" aria-hidden /> Experience
+                </Label>
+                <p id="experience-hint" className="text-xs text-(--muted-foreground) mt-0.5">Company, job title, dates, and bullet points. Use numbers and outcomes where possible.</p>
+              </div>
               {experienceItems.map((job, idx) => (
-                <div key={idx} className="rounded-lg border border-(--border) p-4 space-y-3">
+                <div key={idx} className="rounded-xl border-2 border-(--border)/60 bg-(--card) p-4 space-y-3 shadow-sm">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
                       placeholder="Company"
@@ -791,14 +952,19 @@ export default function ResumePage() {
                 <Plus className="h-4 w-4 mr-1" />
                 Add job
               </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Education (optional)</Label>
-              <p className="text-xs text-(--muted-foreground)">No AI tailoring — edit manually.</p>
+            </section>
+
+            <section className="space-y-3 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="education-label">
+              <div>
+                <Label id="education-label" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
+                  <GraduationCap className="h-4 w-4 text-(--primary)" aria-hidden /> Education (optional)
+                </Label>
+                <p id="education-hint" className="text-xs text-(--muted-foreground) mt-0.5">Edit manually; not used for AI tailoring.</p>
+              </div>
               {educationItems.map((edu, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-(--border) bg-(--muted)/30 p-3 space-y-2"
+                  className="rounded-xl border-2 border-(--border)/60 bg-(--muted)/20 p-4 space-y-2 shadow-sm"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div className="space-y-1">
@@ -880,16 +1046,16 @@ export default function ResumePage() {
                 <Plus className="h-4 w-4 mr-1" />
                 Add education
               </Button>
-            </div>
-            <div className="space-y-2 pt-2">
-              {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
-                <div className="mt-3 space-y-2">
-                  <p className="text-xs font-medium text-(--muted-foreground)">Key points for this role</p>
+            </section>
+
+            {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
+                <div className="mt-6 rounded-xl border-2 border-(--primary)/20 bg-gradient-to-b from-(--primary)/5 to-transparent p-4 space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">Key points for this role</p>
                   <div className="flex flex-wrap gap-2">
                     {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)!.keywords.map((k) => (
                       <span
                         key={k}
-                        className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1 text-xs font-medium"
+                        className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1.5 text-xs font-medium"
                       >
                         {k}
                       </span>
@@ -898,7 +1064,7 @@ export default function ResumePage() {
                   <button
                     type="button"
                     onClick={() => setShowSnapshotDetail((v) => !v)}
-                    className="flex items-center gap-1 text-xs text-(--muted-foreground) hover:text-(--foreground)"
+                    className="flex items-center gap-1.5 text-xs font-medium text-(--muted-foreground) hover:text-(--foreground) rounded-md focus-visible:ring-2 focus-visible:ring-(--ring)"
                   >
                     <Info className="h-3.5 w-3.5" />
                     {showSnapshotDetail ? "Hide suggestion snapshot" : "View suggestion snapshot"}
@@ -908,7 +1074,7 @@ export default function ResumePage() {
                     const snap = pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot;
                     if (!snap) return null;
                     return (
-                      <div className="mt-2 rounded-lg border border-(--border) bg-(--muted)/30 p-3 text-sm space-y-2">
+                      <div className="mt-2 rounded-xl border border-(--border) bg-(--card) p-4 text-sm space-y-3 shadow-sm">
                         {snap.tailoredSummary && (
                           <div>
                             <p className="text-xs font-medium text-(--muted-foreground) mb-1">Suggested summary applied</p>
@@ -930,47 +1096,64 @@ export default function ResumePage() {
                   })()}
                 </div>
               ) : null}
+          </div>
+        </Card>
+          </div>
+
+          <aside className="hidden lg:block">
+            <div className="sticky top-6">
+              <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
             </div>
-            <div className="flex gap-2">
+          </aside>
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-(--border) bg-(--card)/95 backdrop-blur supports-backdrop-filter:bg-(--card)/80 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+            <p className="text-sm font-medium text-(--muted-foreground) hidden sm:block">
+              Unsaved changes
+            </p>
+            <div className="flex w-full sm:w-auto flex-wrap items-center justify-end gap-2">
+              <Button variant="outline" onClick={handleCancelEdit} size="sm">
+                Cancel
+              </Button>
               <Button
                 onClick={handleSave}
                 disabled={updateMutation.isPending}
+                size="sm"
                 className="gap-2"
               >
                 {updateMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                 ) : (
-                  <Save className="h-4 w-4" />
+                  <Save className="h-4 w-4" aria-hidden />
                 )}
-                Save
-              </Button>
-              <Button variant="outline" onClick={handleCancelEdit}>
-                Cancel
+                Save resume
               </Button>
             </div>
           </div>
-        </Card>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
-      <div>
-        <h1 className="text-2xl font-bold text-(--foreground)">Resume</h1>
-        <p className="text-sm text-(--muted-foreground) mt-0.5">
-          {resume.title} · {sectionCount} section{sectionCount !== 1 ? "s" : ""}
-        </p>
-      </div>
-      <Card className="rounded-2xl border border-(--border) bg-(--card) p-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">{resume.title}</CardTitle>
-          <CardDescription>
-            {sectionCount} section{sectionCount !== 1 ? "s" : ""}. Add more in edit mode later.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <>
+        <div className="space-y-8 pb-24">
+          <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
+          <header>
+            <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
+            <p className="mt-1 text-sm text-(--muted-foreground)">
+              {resume.title} · {sectionCount} section{sectionCount !== 1 ? "s" : ""}
+            </p>
+          </header>
+          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/[0.03] to-transparent shadow-lg overflow-hidden">
+            <CardHeader className="pb-5 border-b-2 border-(--border) px-6 pt-6">
+              <CardTitle className="text-lg font-semibold text-(--foreground)">{resume.title}</CardTitle>
+              <CardDescription className="text-(--muted-foreground) mt-0.5">
+                Review and edit sections below, or export as PDF.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 p-6">
           {(["summary", "skills", "experience", "education"] as const).map((sectionType) => {
             const s = getSection(resume, sectionType) ?? {
               id: "",
@@ -983,10 +1166,44 @@ export default function ResumePage() {
             const hasContent = s.body || (s.items?.length ?? 0) > 0;
             const showTailor = sectionType !== "education";
             const isEditingThisSection = editingSection === sectionType;
+            const isOpen = sectionOpen[sectionType] !== false;
+            const preview =
+              !isOpen && sectionType === "summary" && s.body
+                ? s.body.slice(0, 50).trim() + (s.body.length > 50 ? "…" : "")
+                : !isOpen && sectionType === "skills" && s.body
+                  ? `${s.body.split(/[\n,]+/).map((x) => x.trim()).filter(Boolean).length} skills`
+                  : !isOpen && sectionType === "experience" && (s.items?.length ?? 0) > 0
+                    ? `${s.items!.length} role${s.items!.length !== 1 ? "s" : ""}`
+                    : !isOpen && sectionType === "education" && (s.items?.length ?? 0) > 0
+                      ? `${s.items!.length} entr${s.items!.length !== 1 ? "ies" : "y"}`
+                      : null;
 
+            const SectionIcon = sectionType === "summary" ? AlignLeft : sectionType === "skills" ? Wrench : sectionType === "experience" ? Briefcase : GraduationCap;
             return (
-              <div key={s.id || sectionType} className="rounded-xl border border-(--border) bg-(--card) p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-(--foreground)">{s.heading}</h3>
+              <div key={s.id || sectionType} className="rounded-xl border-2 border-(--border) bg-(--card) shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(sectionType)}
+                  className="flex w-full items-center justify-between gap-2 p-4 text-left hover:bg-(--muted)/30 transition-colors rounded-t-xl"
+                  aria-expanded={isOpen}
+                >
+                  <span className="min-w-0 flex items-center gap-2">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+                      <SectionIcon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-(--foreground) tracking-tight">{s.heading}</span>
+                    {preview && <span className="block text-xs text-(--muted-foreground) mt-0.5 truncate">{preview}</span>}
+                    </span>
+                  </span>
+                  {isOpen ? (
+                    <ChevronUp className="h-4 w-4 shrink-0 text-(--muted-foreground)" aria-hidden />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 shrink-0 text-(--muted-foreground)" aria-hidden />
+                  )}
+                </button>
+                {isOpen && (
+                <div className="p-5 pt-0 space-y-3 border-t border-(--border)/50">
 
                 {isEditingThisSection ? (
                   <>
@@ -1201,93 +1418,110 @@ export default function ResumePage() {
                     Edit
                   </Button>
                 </div>
-                  </>
+                </>
+                  )}
+                </div>
                 )}
               </div>
             );
           })}
         </CardContent>
       </Card>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleUploadResume(file);
-        }}
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploadingResume}
-          variant="outline"
-          className="gap-2"
-        >
-          {isUploadingResume ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Upload className="h-4 w-4" />
-          )}
-          Import from file
-        </Button>
-        <Button
-          onClick={handlePreviewPdf}
-          disabled={isPreviewingPdf || isExportingPdf}
-          variant="outline"
-          className="gap-2"
-        >
-          {isPreviewingPdf ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-          Preview
-        </Button>
-        <Button
-          onClick={handleDownloadPdf}
-          disabled={isExportingPdf || isPreviewingPdf}
-          variant="outline"
-          className="gap-2"
-        >
-          {isExportingPdf ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          Download PDF
-        </Button>
-        <Button onClick={() => enterEditMode(resume)} variant="outline" className="gap-2">
-          Edit resume
-        </Button>
-      </div>
+        </div>
 
-      <Dialog open={tailorOpen} onOpenChange={(open) => {
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          className="hidden"
+          aria-hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleUploadResume(file);
+          }}
+        />
+
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-(--border) bg-(--card)/95 backdrop-blur supports-backdrop-filter:bg-(--card)/80 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <span className="text-xs font-medium text-(--muted-foreground)">Export</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={handlePreviewPdf}
+                disabled={isPreviewingPdf || isExportingPdf}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                {isPreviewingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden />
+                )}
+                Preview
+              </Button>
+              <Button
+                onClick={handleDownloadPdf}
+                disabled={isExportingPdf || isPreviewingPdf}
+                size="sm"
+                className="gap-2"
+              >
+                {isExportingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Download className="h-4 w-4" aria-hidden />
+                )}
+                Download PDF
+              </Button>
+            </div>
+            <span className="w-px h-5 bg-(--border) hidden sm:block" aria-hidden />
+            <span className="text-xs font-medium text-(--muted-foreground)">Edit</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingResume}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                {isUploadingResume ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Upload className="h-4 w-4" aria-hidden />
+                )}
+                Import
+              </Button>
+              <Button onClick={() => enterEditMode(resume)} variant="outline" size="sm" className="gap-2">
+                Edit resume
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <Dialog open={tailorOpen} onOpenChange={(open) => {
         setTailorOpen(open);
         if (!open) {
           setTailorResult(null);
           setJobDescriptionForTailor("");
         }
       }}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
-            <DialogTitle>{tailorResult ? "Your suggestions" : "Tailor for a job"}</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl border-2 border-(--border) shadow-xl bg-(--card)" aria-describedby="tailor-desc">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-4 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+            <DialogTitle className="text-(--foreground) text-lg font-semibold">{tailorResult ? "Your suggestions" : "Tailor for a job"}</DialogTitle>
+            <DialogDescription id="tailor-desc" className="text-(--muted-foreground) mt-1">
               {tailorResult
                 ? "Review the tailored summary and keywords below. Apply to your resume or get new suggestions."
                 : "Paste the job description below. We'll suggest a tailored summary and keywords."}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
             {tailorResult ? (
               <>
-                <div className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden">
-                  <div className="p-4 space-y-4">
+                <div className="rounded-xl border-2 border-(--border) bg-(--card) shadow-md overflow-hidden">
+                  <div className="p-5 space-y-4">
                     {tailorResult.tailoredSummary && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
-                          Suggested summary
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
+                          <AlignLeft className="h-3.5 w-3.5" aria-hidden /> Suggested summary
                         </h4>
                         <p className="text-sm text-(--foreground) leading-relaxed whitespace-pre-wrap">
                           {tailorResult.tailoredSummary}
@@ -1296,14 +1530,14 @@ export default function ResumePage() {
                     )}
                     {(tailorResult.keywords?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
-                          Keywords to include
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
+                          <Sparkles className="h-3.5 w-3.5" aria-hidden /> Keywords to include
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {(tailorResult.keywords ?? []).map((k) => (
                             <span
                               key={k}
-                              className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1 text-xs font-medium"
+                              className="inline-flex items-center rounded-full bg-(--primary)/10 text-(--primary) px-3 py-1.5 text-xs font-medium"
                             >
                               {k}
                             </span>
@@ -1313,14 +1547,14 @@ export default function ResumePage() {
                     )}
                     {(tailorResult.suggestedSkills?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
-                          Suggested skills
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
+                          <Wrench className="h-3.5 w-3.5" aria-hidden /> Suggested skills
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {(tailorResult.suggestedSkills ?? []).map((sk) => (
                             <span
                               key={sk}
-                              className="inline-flex items-center rounded-full bg-(--muted) text-(--foreground) px-3 py-1 text-xs font-medium"
+                              className="inline-flex items-center rounded-full bg-(--muted) text-(--foreground) px-3 py-1.5 text-xs font-medium"
                             >
                               {sk}
                             </span>
@@ -1330,13 +1564,13 @@ export default function ResumePage() {
                     )}
                     {(tailorResult.bulletSuggestions?.length ?? 0) > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
-                          Bullet ideas
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
+                          <Briefcase className="h-3.5 w-3.5" aria-hidden /> Bullet ideas
                         </h4>
-                        <ul className="space-y-1.5">
+                        <ul className="space-y-2">
                           {(tailorResult.bulletSuggestions ?? []).map((b, i) => (
                             <li key={i} className="flex gap-2 text-sm text-(--foreground)">
-                              <span className="text-(--primary) mt-0.5">•</span>
+                              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--primary)/60" aria-hidden />
                               <span className="flex-1">{b}</span>
                             </li>
                           ))}
@@ -1360,7 +1594,7 @@ export default function ResumePage() {
               </div>
             )}
           </div>
-          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row flex-wrap px-6 pb-6 pt-2 border-t border-(--border)">
+          <DialogFooter className="shrink-0 flex flex-col gap-2 sm:flex-row flex-wrap px-6 pb-6 pt-4 border-t-2 border-(--border)">
             {tailorResult ? (
               <>
                 {tailorResult.tailoredSummary && (
@@ -1402,6 +1636,6 @@ export default function ResumePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </>
   );
 }
