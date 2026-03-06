@@ -28,12 +28,12 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-(--foreground) sm:text-4xl">
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
           Dashboard
         </h1>
-        <p className="text-base text-(--muted-foreground)">
+        <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
           Track and manage your job applications in one place.
         </p>
       </header>
@@ -50,20 +50,30 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section aria-labelledby="tools-heading" className="space-y-4">
-        <h2 id="tools-heading" className="text-lg font-semibold text-(--foreground)">
-          Get set up
+      <section id="jobs" className="scroll-mt-8" aria-labelledby="applications-heading">
+        <h2 id="applications-heading" className="sr-only">
+          Your applications
         </h2>
-        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+        <JobList />
+      </section>
+
+      <section aria-labelledby="tools-heading" className="space-y-4">
+        <div>
+          <h2 id="tools-heading" className="text-lg font-semibold text-(--foreground)">
+            Get set up
+          </h2>
+          <p className="mt-0.5 text-sm text-(--muted-foreground)">
+            Complete your profile and connect tools to get the most out of Trackr.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
           <ProfileChecklistCard />
           <ExtensionKeyCard />
         </div>
-        <EmailInboundCard />
+        <div id="email-inbound" className="scroll-mt-8">
+          <EmailInboundCard />
+        </div>
         <EmailSuggestionsCard />
-      </section>
-
-      <section id="jobs" className="scroll-mt-8">
-        <JobList />
       </section>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Application, ApplicationStatus, JobFormData } from "@/types";
 
 const jobFormSchema = z.object({
@@ -76,6 +77,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
   });
 
   const status = watch("status");
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
 
   // Populate form when dialog opens (edit) or reset when opening for new job
   useEffect(() => {
@@ -102,7 +104,9 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         salaryRange: "",
         location: "",
       });
+      setShowMoreOptions(false);
     }
+    if (initialData) setShowMoreOptions(!!(initialData.notes || initialData.salaryRange || initialData.location));
   }, [open, initialData, reset]);
 
   const handleFormSubmit = async (data: JobFormValues) => {
@@ -185,55 +189,76 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={status}
-                onValueChange={(value) => setValue("status", value as ApplicationStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="applied">Applied</SelectItem>
-                  <SelectItem value="interview_1">Interview 1</SelectItem>
-                  <SelectItem value="interview_2">Interview 2</SelectItem>
-                  <SelectItem value="interview_3">Interview 3</SelectItem>
-                  <SelectItem value="offer">Offer</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="withdrawn">Withdrawn</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                {...register("location")}
-                placeholder="e.g., Remote, New York, NY"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(value) => setValue("status", value as ApplicationStatus)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="applied">Applied</SelectItem>
+                <SelectItem value="interview_1">Interview 1</SelectItem>
+                <SelectItem value="interview_2">Interview 2</SelectItem>
+                <SelectItem value="interview_3">Interview 3</SelectItem>
+                <SelectItem value="offer">Offer</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="withdrawn">Withdrawn</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="salaryRange">Salary Range</Label>
-            <Input
-              id="salaryRange"
-              {...register("salaryRange")}
-              placeholder="e.g., $100k - $150k"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              {...register("notes")}
-              placeholder="Any additional notes about this application..."
-              rows={4}
-            />
+          <div className="border-t border-(--border) pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-(--muted-foreground) hover:text-(--foreground)"
+              onClick={() => setShowMoreOptions((v) => !v)}
+            >
+              {showMoreOptions ? (
+                <>
+                  <ChevronUp className="size-4" aria-hidden />
+                  Fewer options
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="size-4" aria-hidden />
+                  More options (location, salary, notes)
+                </>
+              )}
+            </Button>
+            {showMoreOptions && (
+              <div className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    {...register("location")}
+                    placeholder="e.g., Remote, New York, NY"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salaryRange">Salary range</Label>
+                  <Input
+                    id="salaryRange"
+                    {...register("salaryRange")}
+                    placeholder="e.g., $100k - $150k"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    {...register("notes")}
+                    placeholder="Any additional notes about this application..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           </div>
 

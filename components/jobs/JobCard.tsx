@@ -59,7 +59,7 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
 
 export function JobCard({ job, onEdit, onDelete, onStatusChange, isUpdatingStatus }: JobCardProps) {
   return (
-    <article className="rounded-2xl border border-(--border) bg-(--card) p-6 shadow-sm transition-shadow hover:shadow-md">
+    <article className="rounded-2xl border-2 border-(--border) bg-(--card) p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
       {/* Status and actions — full-width row, status left / menu right */}
       <div className="flex items-center justify-between gap-3 border-b border-(--border) pb-3">
         <div className="min-w-0 shrink-0">

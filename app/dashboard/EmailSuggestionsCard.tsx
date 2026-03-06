@@ -137,25 +137,36 @@ export function EmailSuggestionsCard() {
 
   return (
     <>
-      <Card className="rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Email suggestions
-          </CardTitle>
-          <CardDescription>
-            Forward application emails to Trackr; we parse them and suggest adding or updating applications.
-          </CardDescription>
+      <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+        <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+          <div className="flex items-start gap-4">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+              <Mail className="size-6" strokeWidth={1.5} />
+            </span>
+            <div className="min-w-0">
+              <CardTitle className="text-lg font-semibold text-(--foreground)">
+                Email suggestions
+              </CardTitle>
+              <CardDescription className="mt-0.5">
+                Forward application emails to Trackr; we parse them and suggest adding or updating applications.
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-6 py-5">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-(--muted-foreground)" />
             </div>
           ) : suggestions.length === 0 ? (
-            <p className="text-sm text-(--muted-foreground) py-2">
-              No pending suggestions. Forward application emails to your Trackr address to see them here.
-            </p>
+            <div className="space-y-2 py-2">
+              <p className="text-sm text-(--muted-foreground)">
+                No pending suggestions. Forward application emails to your Trackr address to see them here.
+              </p>
+              <p className="text-xs text-(--muted-foreground)">
+                Get your forward address in the card above to start.
+              </p>
+            </div>
           ) : (
             <ul className="space-y-3">
               {suggestions.map((s) => (

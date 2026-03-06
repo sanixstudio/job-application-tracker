@@ -71,22 +71,22 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           key={title}
           role="group"
           aria-label={`${title}: ${stats[valueKey]}`}
-          className={`rounded-2xl border border-(--border) bg-(--card) shadow-sm transition-all duration-200 hover:shadow-md hover:border-(--border)/80 ${cardAccent}`}
+          className={`rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${cardAccent}`}
         >
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <span
-                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
+                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-2xl ${iconBg} ${iconColor}`}
                 aria-hidden
               >
-                <Icon className="size-7" strokeWidth={1.75} />
+                <Icon className="size-6" strokeWidth={1.75} />
               </span>
             </div>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-sm font-medium text-(--stat-label) tracking-tight">
+              <p className="text-sm font-medium text-(--muted-foreground) tracking-tight">
                 {title}
               </p>
-              <p className="text-3xl font-bold tabular-nums tracking-tight text-(--stat-value)">
+              <p className="text-3xl font-bold tabular-nums tracking-tight text-(--foreground)">
                 {stats[valueKey]}
               </p>
             </div>
