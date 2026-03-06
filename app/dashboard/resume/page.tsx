@@ -15,10 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FileText, Save, Download, Eye, Sparkles, Info, ChevronDown, ChevronUp, ChevronRight, Trash2, Upload, Trophy, TrendingUp, AlertCircle, Lightbulb, Briefcase, GraduationCap, AlignLeft, Wrench, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, FileText, Save, Download, Eye, Sparkles, Info, ChevronDown, ChevronUp, ChevronRight, Trash2, Upload, Trophy, TrendingUp, AlertCircle, Lightbulb, Briefcase, GraduationCap, AlignLeft, Wrench, AlertTriangle, Check } from "lucide-react";
 import { useState, useCallback, useRef, useMemo } from "react";
 import type { Resume, ResumeContent, ResumeSection, LastTailorSnapshot } from "@/types";
-import { scoreResume } from "@/lib/resume-score";
+import { scoreResume, scoreResumeAgainstJob } from "@/lib/resume-score";
 
 /** One work history entry for the Experience section. */
 export interface ExperienceItem {
@@ -242,6 +242,78 @@ function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[
   );
 }
 
+/** Label for score type (general vs match). */
+function ScoreCardLabel({ label, recommended }: { label: string; recommended?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <span className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">{label}</span>
+      {recommended && (
+        <span className="rounded-full bg-(--primary)/10 text-(--primary) px-2 py-0.5 text-[10px] font-medium">
+          Recommended when applying
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Resume score section: general score + optional JD for match-to-job score. */
+function ResumeScoreSection({
+  generalScore,
+  generalFeedback,
+  scoreJobDescription,
+  setScoreJobDescription,
+  scoreWithJob,
+}: {
+  generalScore: number;
+  generalFeedback: string[];
+  scoreJobDescription: string;
+  setScoreJobDescription: (v: string) => void;
+  scoreWithJob: { matchScore: number; matchFeedback: string[]; keywordMatch: { found: number; total: number } } | null;
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <ScoreCardLabel label="General quality" />
+        <p className="text-xs text-(--muted-foreground) mb-2">
+          Based on your resume only: sections, impact bullets, and metrics.
+        </p>
+        <ResumeScoreCard score={generalScore} feedback={generalFeedback} />
+      </div>
+
+      <div className="rounded-xl border-2 border-(--border) bg-(--muted)/20 p-4 space-y-3">
+        <p className="text-sm font-medium text-(--foreground)">
+          Score against a job description
+        </p>
+        <p className="text-xs text-(--muted-foreground)">
+          For a more accurate score, paste the job description below. We’ll show how well your resume matches the role — this is the recommended way when you’re applying.
+        </p>
+        <textarea
+          value={scoreJobDescription}
+          onChange={(e) => setScoreJobDescription(e.target.value)}
+          placeholder="Paste the full job description here..."
+          className="w-full min-h-24 rounded-lg border border-(--border) bg-(--card) px-3 py-2 text-sm placeholder:text-(--muted-foreground) resize-y focus:outline-none focus:ring-2 focus:ring-(--ring)"
+          aria-label="Job description for match scoring"
+        />
+      </div>
+
+      {scoreWithJob && (
+        <div>
+          <ScoreCardLabel label="Match to job description" recommended />
+          <p className="text-xs text-(--muted-foreground) mb-2">
+            How well your resume matches the job posting (keyword overlap).
+          </p>
+          <ResumeScoreCard score={scoreWithJob.matchScore} feedback={scoreWithJob.matchFeedback} />
+          {scoreWithJob.keywordMatch.total > 0 && (
+            <p className="text-xs text-(--muted-foreground) mt-2">
+              {scoreWithJob.keywordMatch.found} of {scoreWithJob.keywordMatch.total} keywords from the job description appear in your resume.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ResumePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
@@ -255,6 +327,10 @@ export default function ResumePage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isPreviewingPdf, setIsPreviewingPdf] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
+  /** Current step (0–3) for upload/parse progress; drives stepper UI. */
+  const [uploadStep, setUploadStep] = useState(0);
+  const uploadStepTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tailorOpen, setTailorOpen] = useState(false);
   const [jobDescriptionForTailor, setJobDescriptionForTailor] = useState("");
@@ -267,6 +343,8 @@ export default function ResumePage() {
   const [isTailoring, setIsTailoring] = useState(false);
   const [pendingTailorSnapshot, setPendingTailorSnapshot] = useState<LastTailorSnapshot | null>(null);
   const [showSnapshotDetail, setShowSnapshotDetail] = useState(false);
+  /** Job description used for match-to-job scoring (optional). */
+  const [scoreJobDescription, setScoreJobDescription] = useState("");
   /** View mode: which sections are expanded. Default all true. */
   const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>({
     summary: true,
@@ -578,8 +656,23 @@ export default function ResumePage() {
     setIsEditing(true);
   }, []);
 
+  /** Step labels for upload/parse progress (shown in modal). */
+  const UPLOAD_STEPS = ["Uploading file", "Reading document", "Extracting sections", "Applying to your resume"];
+
   const handleUploadResume = useCallback(async (file: File) => {
+    uploadStepTimersRef.current.forEach((t) => clearTimeout(t));
+    uploadStepTimersRef.current = [];
     setIsUploadingResume(true);
+    setUploadingFileName(file.name);
+    setUploadStep(0);
+
+    const scheduleStep = (step: number, ms: number) => {
+      const id = setTimeout(() => setUploadStep(step), ms);
+      uploadStepTimersRef.current.push(id);
+    };
+    scheduleStep(1, 400);
+    scheduleStep(2, 1200);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -588,6 +681,10 @@ export default function ResumePage() {
       if (!data.success) throw new Error(data.error ?? "Parse failed");
       const { content } = data.data;
 
+      uploadStepTimersRef.current.forEach((t) => clearTimeout(t));
+      uploadStepTimersRef.current = [];
+      setUploadStep(3);
+
       if (!resume) {
         createMutation.mutate({ content });
         toast.success("Resume imported. Review the sections and save any changes.");
@@ -595,11 +692,17 @@ export default function ResumePage() {
         applyParsedContentToForm(content, resume.title);
         toast.success("Resume parsed. Review the sections below and click Save to keep changes.");
       }
+
+      await new Promise((r) => setTimeout(r, 500));
     } catch (err) {
       toast.error("Could not parse resume", {
         description: err instanceof Error ? err.message : "Use a PDF or DOCX file with selectable text.",
       });
     } finally {
+      uploadStepTimersRef.current.forEach((t) => clearTimeout(t));
+      uploadStepTimersRef.current = [];
+      setUploadStep(0);
+      setUploadingFileName(null);
       setIsUploadingResume(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -641,6 +744,14 @@ export default function ResumePage() {
     const content = isEditing ? contentFromFormState : (resume?.content ?? { sections: [] });
     return scoreResume(content);
   }, [isEditing, contentFromFormState, resume?.content]);
+
+  /** When user has pasted a JD, score against it (general + match). */
+  const liveScoreWithJob = useMemo(() => {
+    const content = isEditing ? contentFromFormState : (resume?.content ?? { sections: [] });
+    const jd = scoreJobDescription.trim();
+    if (!jd) return null;
+    return scoreResumeAgainstJob(content, jd);
+  }, [isEditing, contentFromFormState, resume?.content, scoreJobDescription]);
 
   const handleSave = () => {
     if (!resume) return;
@@ -756,6 +867,7 @@ export default function ResumePage() {
 
   if (!resume) {
     return (
+      <>
       <div className="space-y-8">
         <header>
           <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
@@ -813,6 +925,51 @@ export default function ResumePage() {
           </div>
         </Card>
       </div>
+
+        <Dialog open={isUploadingResume} onOpenChange={() => {}}>
+          <DialogContent
+            showCloseButton={false}
+            className="sm:max-w-sm rounded-2xl border-2 border-(--border) shadow-xl bg-(--card) text-center"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+            aria-describedby="upload-desc"
+            aria-busy={isUploadingResume}
+          >
+            <div className="flex flex-col items-center gap-5 py-4 px-2">
+              <div className="relative flex size-14 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+                <FileText className="size-7 animate-pulse" strokeWidth={1.5} aria-hidden />
+                <span className="absolute -inset-1 rounded-2xl border-2 border-(--primary)/30 border-t-(--primary) animate-spin" aria-hidden />
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-(--foreground)">Importing your resume</p>
+                <p id="upload-desc" className="text-sm text-(--muted-foreground)">
+                  {uploadingFileName ? (
+                    <span className="truncate block max-w-[240px] mx-auto" title={uploadingFileName}>{uploadingFileName}</span>
+                  ) : (
+                    "This may take a few seconds…"
+                  )}
+                </p>
+              </div>
+              <ul className="w-full space-y-2.5 text-left" aria-live="polite" aria-label="Import progress">
+                {UPLOAD_STEPS.map((label, i) => (
+                  <li key={label} className="flex items-center gap-3 text-sm">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-(--border) bg-(--card)" aria-hidden>
+                      {i < uploadStep ? (
+                        <Check className="size-3.5 text-(--primary)" strokeWidth={2.5} />
+                      ) : i === uploadStep ? (
+                        <Loader2 className="size-3.5 animate-spin text-(--primary)" />
+                      ) : (
+                        <span className="size-2 rounded-full bg-(--muted-foreground)/30" />
+                      )}
+                    </span>
+                    <span className={i <= uploadStep ? "text-(--foreground)" : "text-(--muted-foreground)"}>{label}{i === uploadStep ? "…" : ""}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -830,7 +987,13 @@ export default function ResumePage() {
               </p>
             </header>
             <div className="lg:hidden">
-              <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
+              <ResumeScoreSection
+                generalScore={liveScoreResult.score}
+                generalFeedback={liveScoreResult.feedback}
+                scoreJobDescription={scoreJobDescription}
+                setScoreJobDescription={setScoreJobDescription}
+                scoreWithJob={liveScoreWithJob ? { matchScore: liveScoreWithJob.matchScore, matchFeedback: liveScoreWithJob.matchFeedback, keywordMatch: liveScoreWithJob.keywordMatch } : null}
+              />
             </div>
             <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/[0.03] to-transparent shadow-lg overflow-hidden">
           <div className="p-6 sm:p-7 space-y-8">
@@ -1102,7 +1265,13 @@ export default function ResumePage() {
 
           <aside className="hidden lg:block">
             <div className="sticky top-6">
-              <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
+              <ResumeScoreSection
+                generalScore={liveScoreResult.score}
+                generalFeedback={liveScoreResult.feedback}
+                scoreJobDescription={scoreJobDescription}
+                setScoreJobDescription={setScoreJobDescription}
+                scoreWithJob={liveScoreWithJob ? { matchScore: liveScoreWithJob.matchScore, matchFeedback: liveScoreWithJob.matchFeedback, keywordMatch: liveScoreWithJob.keywordMatch } : null}
+              />
             </div>
           </aside>
         </div>
@@ -1139,7 +1308,13 @@ export default function ResumePage() {
   return (
       <>
         <div className="space-y-8 pb-24">
-          <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
+          <ResumeScoreSection
+            generalScore={liveScoreResult.score}
+            generalFeedback={liveScoreResult.feedback}
+            scoreJobDescription={scoreJobDescription}
+            setScoreJobDescription={setScoreJobDescription}
+            scoreWithJob={liveScoreWithJob ? { matchScore: liveScoreWithJob.matchScore, matchFeedback: liveScoreWithJob.matchFeedback, keywordMatch: liveScoreWithJob.keywordMatch } : null}
+          />
           <header>
             <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
             <p className="mt-1 text-sm text-(--muted-foreground)">
@@ -1496,6 +1671,50 @@ export default function ResumePage() {
             </div>
           </div>
         </div>
+
+        <Dialog open={isUploadingResume} onOpenChange={() => {}}>
+          <DialogContent
+            showCloseButton={false}
+            className="sm:max-w-sm rounded-2xl border-2 border-(--border) shadow-xl bg-(--card) text-center"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+            aria-describedby="upload-desc-import"
+            aria-busy={isUploadingResume}
+          >
+            <div className="flex flex-col items-center gap-5 py-4 px-2">
+              <div className="relative flex size-14 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+                <FileText className="size-7 animate-pulse" strokeWidth={1.5} aria-hidden />
+                <span className="absolute -inset-1 rounded-2xl border-2 border-(--primary)/30 border-t-(--primary) animate-spin" aria-hidden />
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-(--foreground)">Importing your resume</p>
+                <p id="upload-desc-import" className="text-sm text-(--muted-foreground)">
+                  {uploadingFileName ? (
+                    <span className="truncate block max-w-[240px] mx-auto" title={uploadingFileName}>{uploadingFileName}</span>
+                  ) : (
+                    "This may take a few seconds…"
+                  )}
+                </p>
+              </div>
+              <ul className="w-full space-y-2.5 text-left" aria-live="polite" aria-label="Import progress">
+                {UPLOAD_STEPS.map((label, i) => (
+                  <li key={label} className="flex items-center gap-3 text-sm">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-(--border) bg-(--card)" aria-hidden>
+                      {i < uploadStep ? (
+                        <Check className="size-3.5 text-(--primary)" strokeWidth={2.5} />
+                      ) : i === uploadStep ? (
+                        <Loader2 className="size-3.5 animate-spin text-(--primary)" />
+                      ) : (
+                        <span className="size-2 rounded-full bg-(--muted-foreground)/30" />
+                      )}
+                    </span>
+                    <span className={i <= uploadStep ? "text-(--foreground)" : "text-(--muted-foreground)"}>{label}{i === uploadStep ? "…" : ""}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={tailorOpen} onOpenChange={(open) => {
         setTailorOpen(open);

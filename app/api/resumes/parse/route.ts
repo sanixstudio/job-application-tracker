@@ -71,26 +71,24 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are a resume parser. Given raw text extracted from a resume, output structured JSON that matches this TypeScript shape exactly (no markdown, no code fence):
-{
-  "sections": [
-    { "id": "unique-id-1", "type": "summary", "heading": "Summary", "body": "2-4 sentence professional summary" },
-    { "id": "unique-id-2", "type": "skills", "heading": "Skills", "body": "comma or newline separated skills" },
-    { "id": "unique-id-3", "type": "experience", "heading": "Experience", "items": [{ "company": "", "title": "", "dates": "", "description": "bullet points, one per line" }] },
-    { "id": "unique-id-4", "type": "education", "heading": "Education", "items": [{ "school": "", "degree": "", "field": "", "dates": "" }] }
-  ]
-}
-Rules:
+          content: `You are a resume parser. Given raw text extracted from a document, output structured JSON (no markdown, no code fence) with two top-level keys:
+
+1. "is_resume" (boolean): true only if the document is clearly a professional resume/CV (career history, skills, education, work experience). Set false for articles, recipes, fiction, lists, or any non-resume content—even if you can force it into sections.
+
+2. "sections": array of parsed sections. Use this shape:
+[
+  { "id": "unique-id-1", "type": "summary", "heading": "Summary", "body": "..." },
+  { "id": "unique-id-2", "type": "skills", "heading": "Skills", "body": "..." },
+  { "id": "unique-id-3", "type": "experience", "heading": "Experience", "items": [{ "company": "", "title": "", "dates": "", "description": "..." }] },
+  { "id": "unique-id-4", "type": "education", "heading": "Education", "items": [{ "school": "", "degree": "", "field": "", "dates": "" }] }
+]
 - type must be one of: summary, skills, experience, education, projects.
-- Use "summary" for professional summary / objective. Use "skills" for technical and soft skills.
-- experience items must have: company, title, dates, description (description can have multiple bullet points separated by newlines).
-- education items must have: school, degree, field, dates (field can be empty).
-- Omit a section entirely if the resume has no content for it.
-- Preserve the candidate's wording; only structure and normalize. Generate a short UUID-like id for each section (e.g. "a1b2c3d4").`,
+- experience items: company, title, dates, description. education items: school, degree, field, dates.
+- Omit a section if there is no content for it. Preserve the author's wording; only structure. Use short UUID-like ids (e.g. "a1b2c3d4").`,
         },
         {
           role: "user",
-          content: `Extract and structure this resume text into the JSON format:\n\n${rawText.slice(0, 12000)}`,
+          content: `Extract and structure this document. Include "is_resume" and "sections" in your JSON.\n\n${rawText.slice(0, 12000)}`,
         },
       ],
       response_format: { type: "json_object" },
@@ -105,7 +103,10 @@ Rules:
       );
     }
 
-    let parsed: { sections?: Array<{ id?: string; type?: string; heading?: string; body?: string; items?: Array<Record<string, string>> }> };
+    let parsed: {
+      sections?: Array<{ id?: string; type?: string; heading?: string; body?: string; items?: Array<Record<string, string>> }>;
+      is_resume?: boolean;
+    };
     try {
       parsed = JSON.parse(raw) as typeof parsed;
     } catch {
@@ -114,6 +115,8 @@ Rules:
         { status: 502 }
       );
     }
+
+    const isLikelyResumeFromAI = typeof parsed.is_resume === "boolean" ? parsed.is_resume : undefined;
 
     const sections: ResumeSection[] = (parsed.sections ?? [])
       .filter((s) => s.type && ["summary", "skills", "experience", "education", "projects"].includes(s.type))
@@ -126,7 +129,7 @@ Rules:
       }));
 
     const content: ResumeContent = { sections };
-    const { score, feedback } = scoreResume(content);
+    const { score, feedback } = scoreResume(content, { isLikelyResume: isLikelyResumeFromAI });
 
     return NextResponse.json({
       success: true,

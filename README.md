@@ -79,6 +79,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture and design decisions
 - **[SETUP.md](./SETUP.md)** - Detailed setup guide for Gmail and Google Sheets APIs
+- **[docs/RESUME_SCORING.md](./docs/RESUME_SCORING.md)** - Resume scoring methodology, criteria, and research sources
 
 ## 🎯 Usage
 
