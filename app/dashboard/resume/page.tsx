@@ -139,9 +139,9 @@ function ResumeScoreCard({ score, feedback }: { score: number; feedback: string[
         : "border-(--chart-2)/20";
   const cardGradient =
     scoreBand === "high"
-      ? "bg-gradient-to-b from-(--primary)/5 to-transparent"
+      ? "bg-linear-to-b from-(--primary)/5 to-transparent"
       : scoreBand === "low"
-        ? "bg-gradient-to-b from-(--destructive)/5 to-transparent"
+        ? "bg-linear-to-b from-(--destructive)/5 to-transparent"
         : "";
 
   const circumference = 2 * Math.PI * 36;
@@ -830,7 +830,7 @@ export default function ResumePage() {
         <header>
           <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
         </header>
-        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
           <div className="flex flex-col items-center justify-center py-20 gap-5" aria-live="polite">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-(--primary)/10">
               <Loader2 className="h-7 w-7 animate-spin text-(--primary)" aria-hidden />
@@ -848,7 +848,7 @@ export default function ResumePage() {
         <header>
           <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">Resume</h1>
         </header>
-        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-gradient-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
+        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-linear-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
           <div className="p-6 flex gap-4">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--destructive)/10">
               <AlertTriangle className="h-6 w-6 text-(--destructive)" aria-hidden />
@@ -875,7 +875,7 @@ export default function ResumePage() {
             Create your resume to export as PDF or tailor it per job later.
           </p>
         </header>
-        <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+        <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
           <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
             <FileText className="size-10" strokeWidth={1.5} aria-hidden />
           </div>
@@ -995,7 +995,7 @@ export default function ResumePage() {
                 scoreWithJob={liveScoreWithJob ? { matchScore: liveScoreWithJob.matchScore, matchFeedback: liveScoreWithJob.matchFeedback, keywordMatch: liveScoreWithJob.keywordMatch } : null}
               />
             </div>
-            <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/[0.03] to-transparent shadow-lg overflow-hidden">
+            <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/3 to-transparent shadow-lg overflow-hidden">
           <div className="p-6 sm:p-7 space-y-8">
             <section className="space-y-2 rounded-xl p-4 bg-(--card) border border-(--border)/60" aria-labelledby="resume-title-label">
               <Label id="resume-title-label" htmlFor="resume-title" className="flex items-center gap-2 text-sm font-semibold text-(--foreground)">
@@ -1212,7 +1212,7 @@ export default function ResumePage() {
             </section>
 
             {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)?.keywords?.length ? (
-                <div className="mt-6 rounded-xl border-2 border-(--primary)/20 bg-gradient-to-b from-(--primary)/5 to-transparent p-4 space-y-3">
+                <div className="mt-6 rounded-xl border-2 border-(--primary)/20 bg-linear-to-b from-(--primary)/5 to-transparent p-4 space-y-3">
                   <p className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">Key points for this role</p>
                   <div className="flex flex-wrap gap-2">
                     {(pendingTailorSnapshot ?? resume.content?.lastTailorSnapshot)!.keywords.map((k) => (
@@ -1321,7 +1321,7 @@ export default function ResumePage() {
               {resume.title} · {sectionCount} section{sectionCount !== 1 ? "s" : ""}
             </p>
           </header>
-          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/[0.03] to-transparent shadow-lg overflow-hidden">
+          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/3 to-transparent shadow-lg overflow-hidden">
             <CardHeader className="pb-5 border-b-2 border-(--border) px-6 pt-6">
               <CardTitle className="text-lg font-semibold text-(--foreground)">{resume.title}</CardTitle>
               <CardDescription className="text-(--muted-foreground) mt-0.5">
@@ -1724,7 +1724,7 @@ export default function ResumePage() {
         }
       }}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 rounded-2xl border-2 border-(--border) shadow-xl bg-(--card)" aria-describedby="tailor-desc">
-          <DialogHeader className="shrink-0 px-6 pt-6 pb-4 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-4 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
             <DialogTitle className="text-(--foreground) text-lg font-semibold">{tailorResult ? "Your suggestions" : "Tailor for a job"}</DialogTitle>
             <DialogDescription id="tailor-desc" className="text-(--muted-foreground) mt-1">
               {tailorResult

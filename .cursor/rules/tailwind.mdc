@@ -7,7 +7,9 @@ globs: **/*.{tsx,jsx,css}
 
 Use **canonical class names** for theme/CSS variables so the linter (suggestCanonicalClasses) does not flag them.
 
-- **Do:** `border-(--border)`, `bg-(--card)`, `text-(--foreground)`, `bg-(--primary)/10`
-- **Don't:** `border-[var(--border)]`, `bg-[var(--card)]`, `text-[var(--foreground)]`
+- **Do:** `border-(--border)`, `bg-(--card)`, `text-(--foreground)`, `bg-(--primary)/10`, `from-(--primary)/3`
+- **Don't:** `border-[var(--border)]`, `bg-[var(--card)]`, `from-(--primary)/[0.03]`
+
+- **Gradients:** Use canonical gradient utilities: `bg-linear-to-b`, `bg-linear-to-t`, etc. (not `bg-gradient-to-b`).
 
 Tailwind v4 treats `(--name)` as shorthand for `var(--name)` in arbitrary values. Use the shorthand everywhere in `className` strings.

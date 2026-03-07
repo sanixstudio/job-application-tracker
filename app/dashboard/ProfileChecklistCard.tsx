@@ -88,7 +88,7 @@ export function ProfileChecklistCard() {
   if (isLoading || !checklist) {
     return (
       <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">
-        <CardHeader className="pb-2 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+        <CardHeader className="pb-2 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
             Get job-ready
@@ -116,8 +116,8 @@ export function ProfileChecklistCard() {
   const allComplete = completedCount === totalCount;
 
   return (
-    <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-      <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+    <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+      <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
         <div className="flex items-start gap-4">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
             <ClipboardList className="size-6" strokeWidth={1.5} />

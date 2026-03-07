@@ -34,7 +34,7 @@ export function DashboardAnalytics({
   if (funnel.total === 0) {
     return (
       <section aria-label="Application analytics">
-        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-4">
               <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
@@ -126,7 +126,7 @@ export function DashboardAnalytics({
       </div>
 
       <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">
-        <CardHeader className="border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent px-6 py-4">
+        <CardHeader className="border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent px-6 py-4">
           <CardTitle className="text-base font-semibold text-(--foreground)">
             Pipeline funnel
           </CardTitle>

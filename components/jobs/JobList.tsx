@@ -233,7 +233,7 @@ export function JobList({ showHeading = true }: JobListProps) {
       )}
 
       {error && (
-        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-gradient-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
+        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-linear-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
           <div className="p-6 flex gap-4">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--destructive)/10">
               <AlertTriangle className="size-6 text-(--destructive)" aria-hidden />
@@ -256,7 +256,7 @@ export function JobList({ showHeading = true }: JobListProps) {
       {!isLoading && !error && jobs && (
         <>
           {jobs.length === 0 ? (
-            <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-gradient-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+            <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
               <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
                 <Briefcase className="size-10" strokeWidth={1.5} aria-hidden />
               </div>

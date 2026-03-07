@@ -138,7 +138,7 @@ export function EmailSuggestionsCard() {
   return (
     <>
       <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-gradient-to-b from-(--primary)/5 to-transparent">
+        <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
           <div className="flex items-start gap-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
               <Mail className="size-6" strokeWidth={1.5} />
