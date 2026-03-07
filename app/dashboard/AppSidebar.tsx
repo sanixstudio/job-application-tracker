@@ -20,7 +20,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/applications", label: "Applications", icon: Briefcase },
   { href: "/dashboard/resume", label: "Resume", icon: FileText },
-  { href: "/dashboard/career-profiles", label: "Career profiles", icon: UserCircle },
+  { href: "/dashboard/career-profiles", label: "Career profiles", icon: UserCircle, disabled: true },
   { href: "/dashboard/email", label: "Email", icon: Mail },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
@@ -52,11 +52,22 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map(({ href, label, icon: Icon }) => {
+              {navItems.map(({ href, label, icon: Icon, disabled }) => {
                 const isActive =
-                  href === "/dashboard"
+                  !disabled &&
+                  (href === "/dashboard"
                     ? pathname === "/dashboard"
-                    : pathname === href || pathname.startsWith(href + "/");
+                    : pathname === href || pathname.startsWith(href + "/"));
+                if (disabled) {
+                  return (
+                    <SidebarMenuItem key={href}>
+                      <SidebarMenuButton disabled className="opacity-60 cursor-not-allowed" aria-disabled="true">
+                        <Icon className="size-4 shrink-0" aria-hidden />
+                        <span className="truncate group-data-[state=collapsed]:hidden">{label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
                 return (
                   <SidebarMenuItem key={href}>
                     <SidebarMenuButton asChild isActive={isActive}>
