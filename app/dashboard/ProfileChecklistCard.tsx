@@ -186,9 +186,9 @@ export function ProfileChecklistCard() {
               icon={<Briefcase className="h-4 w-4" />}
               label="Add your first application"
               cta={
-                <a href="#jobs" className="text-(--primary) hover:underline">
+                <Link href="/dashboard/applications" className="text-(--primary) hover:underline">
                   Add application
-                </a>
+                </Link>
               }
             />
           </ul>

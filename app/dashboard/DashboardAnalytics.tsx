@@ -48,7 +48,7 @@ export function DashboardAnalytics({
                   Add applications to see your funnel, response rate, and no-response metrics.
                 </p>
                 <Button asChild size="sm" className="mt-3 gap-2">
-                  <Link href="#jobs">
+                  <Link href="/dashboard/applications">
                     <Plus className="size-4" aria-hidden />
                     Add your first application
                   </Link>
@@ -93,6 +93,9 @@ export function DashboardAnalytics({
               <p className="text-xs text-(--muted-foreground)">
                 Applications that reached interview or offer
               </p>
+              <p className="text-xs text-(--muted-foreground) mt-1">
+                Benchmark: 20%+ is good; below 20% try tailoring your resume per role.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -112,6 +115,11 @@ export function DashboardAnalytics({
               <p className="text-xs text-(--muted-foreground)">
                 Still in Applied with no update
               </p>
+              {staleCount > 0 && (
+                <p className="text-xs text-(--primary) mt-1 font-medium">
+                  Consider following up to improve response rate.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

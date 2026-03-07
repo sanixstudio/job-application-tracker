@@ -1,16 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { applications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { computeAnalytics } from "@/lib/analytics";
 import { DashboardAnalytics } from "./DashboardAnalytics";
 import { DashboardStats } from "./DashboardStats";
-import { EmailInboundCard } from "./EmailInboundCard";
-import { EmailSuggestionsCard } from "./EmailSuggestionsCard";
-import { ExtensionKeyCard } from "./ExtensionKeyCard";
 import { ProfileChecklistCard } from "./ProfileChecklistCard";
-import { JobList } from "@/components/jobs/JobList";
+import { Button } from "@/components/ui/button";
+import { Briefcase, Mail } from "lucide-react";
 
 /**
  * Dashboard page — server component.
@@ -34,7 +33,7 @@ export default async function DashboardPage() {
           Dashboard
         </h1>
         <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
-          Track and manage your job applications in one place.
+          Your pipeline at a glance. Track applications, response rate, and next steps.
         </p>
       </header>
 
@@ -50,30 +49,34 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section id="jobs" className="scroll-mt-8" aria-labelledby="applications-heading">
-        <h2 id="applications-heading" className="sr-only">
-          Your applications
+      <section aria-labelledby="quick-links-heading" className="flex flex-wrap gap-3">
+        <h2 id="quick-links-heading" className="sr-only">
+          Quick actions
         </h2>
-        <JobList />
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link href="/dashboard/applications">
+            <Briefcase className="size-4" aria-hidden />
+            View all applications
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link href="/dashboard/email">
+            <Mail className="size-4" aria-hidden />
+            Check email suggestions
+          </Link>
+        </Button>
       </section>
 
       <section aria-labelledby="tools-heading" className="space-y-4">
         <div>
           <h2 id="tools-heading" className="text-lg font-semibold text-(--foreground)">
-            Get set up
+            Get job-ready
           </h2>
           <p className="mt-0.5 text-sm text-(--muted-foreground)">
-            Complete your profile and connect tools to get the most out of Trackr.
+            Complete your profile to get the most out of Trackr.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
-          <ProfileChecklistCard />
-          <ExtensionKeyCard />
-        </div>
-        <div id="email-inbound" className="scroll-mt-8">
-          <EmailInboundCard />
-        </div>
-        <EmailSuggestionsCard />
+        <ProfileChecklistCard />
       </section>
     </div>
   );

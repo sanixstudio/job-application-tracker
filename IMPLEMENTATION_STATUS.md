@@ -21,7 +21,7 @@
 - Resume types and validation (`lib/validations/resume.ts`)
 - Resume page: create/edit (title + Summary), view mode
 - PDF export: `GET /api/resumes/[id]/export?format=pdf` (jspdf), Download PDF button
-- Nav: Resume link in dashboard layout
+- Nav: Dashboard, Applications, Resume, Email, Settings, Home (dedicated pages for applications and email; extension key in Settings)
 
 ### Phase II — M2: AI resume tailoring (Sprint 3)
 

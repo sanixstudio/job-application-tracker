@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FileText, Home } from "lucide-react";
+import { LayoutDashboard, FileText, Briefcase, Mail, Settings, Home } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/applications", label: "Applications", icon: Briefcase },
   { href: "/dashboard/resume", label: "Resume", icon: FileText },
+  { href: "/dashboard/email", label: "Email", icon: Mail },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/", label: "Home", icon: Home },
 ];
 
@@ -25,7 +28,7 @@ export function DashboardNav() {
             ? pathname === "/"
             : href === "/dashboard"
               ? pathname === "/dashboard"
-              : pathname.startsWith(href);
+              : pathname === href || pathname.startsWith(href + "/");
         return (
           <Link
             key={href}

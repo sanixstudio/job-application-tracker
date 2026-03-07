@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { JobCard } from "./JobCard";
 import { JobForm } from "./JobForm";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,12 @@ async function deleteJob(id: string): Promise<void> {
   if (!data.success) throw new Error(data.error || "Failed to delete job");
 }
 
-export function JobList() {
+interface JobListProps {
+  /** When false, omit the in-component heading (for use on dedicated /dashboard/applications page). */
+  showHeading?: boolean;
+}
+
+export function JobList({ showHeading = true }: JobListProps) {
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Application | null>(null);
@@ -158,17 +164,19 @@ export function JobList() {
   const filterLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "Filter";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-(--foreground)">
-            Applications
-          </h2>
-          <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
-            Update status in one click and keep your pipeline moving.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+        {showHeading && (
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-(--foreground)">
+              Applications
+            </h2>
+            <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
+              Update status in one click and keep your pipeline moving.
+            </p>
+          </div>
+        )}
+        <div className={cn("flex items-center gap-2", !showHeading && "w-full justify-end")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="min-w-[160px] justify-between gap-2">
