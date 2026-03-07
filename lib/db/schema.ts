@@ -34,6 +34,10 @@ export const applications = pgTable(
     notes: text("notes"),
     salaryRange: text("salary_range"),
     location: text("location"),
+    /** Optional reminder date for follow-up (e.g. 5–7 business days after applying). */
+    followUpAt: timestamp("follow_up_at", { mode: "date" }),
+    /** Resume used for this application (resumes.id). Enables "which resume got callbacks" later. */
+    resumeId: text("resume_id"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },

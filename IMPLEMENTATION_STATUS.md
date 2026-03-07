@@ -73,6 +73,11 @@
 - Optional polish: tests, onboarding, performance.
 - Phase III (product plan): LinkedIn/GitHub profile hints, interview prep, calendar sync.
 
+### Sprint 9 — Follow-up & next actions (research-backed) — DONE
+
+- **Source:** `docs/JOB_SEEKER_RESEARCH_AND_RECOMMENDATIONS.md`.
+- **Done:** Follow-up reminder per application (S9-1): `followUpAt` on applications, date picker in JobForm, "Follow up" badge on Kanban cards when due. Resume used per application (S9-3): `resumeId` on applications, resume selector in JobForm. No-response 7–14 day tier + CTA (S9-2) in DashboardAnalytics. Dashboard next actions card (S9-4): follow-up due, no response 7+, interviewing counts + link to Applications. Tips card (S9-5) on dashboard. Optional: S9-6 (follow-up template), S9-7 (CSV export) not started.
+
 ### Later (Phase III+)
 
 - LinkedIn/GitHub profile hints, interview prep, calendar sync (see product plan)

@@ -10,6 +10,8 @@ import { DashboardStats } from "./DashboardStats";
 import { ProfileChecklistCard } from "./ProfileChecklistCard";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Mail } from "lucide-react";
+import { DashboardNextActions } from "./DashboardNextActions";
+import { DashboardTips } from "./DashboardTips";
 
 /**
  * Dashboard page — server component.
@@ -33,7 +35,8 @@ export default async function DashboardPage() {
           Dashboard
         </h1>
         <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
-          Your pipeline at a glance. Track applications, response rate, and next steps.
+          Your pipeline at a glance. Track applications, response rate, and next
+          steps.
         </p>
       </header>
 
@@ -42,14 +45,26 @@ export default async function DashboardPage() {
           Pipeline overview
         </h2>
         <DashboardStats stats={stats} />
+        <DashboardNextActions
+          followUpDueCount={analytics.followUpDueCount}
+          noResponse7Count={analytics.noResponse7Count}
+          staleCount={analytics.staleCount}
+          interviewingCount={analytics.interviewingCount}
+          applicationsLink="/dashboard/applications"
+        />
         <DashboardAnalytics
           funnel={analytics.funnel}
           responseRate={analytics.responseRate}
           staleCount={analytics.staleCount}
+          noResponse7Count={analytics.noResponse7Count}
         />
+        <DashboardTips />
       </section>
 
-      <section aria-labelledby="quick-links-heading" className="flex flex-wrap gap-3">
+      <section
+        aria-labelledby="quick-links-heading"
+        className="flex flex-wrap gap-3"
+      >
         <h2 id="quick-links-heading" className="sr-only">
           Quick actions
         </h2>
@@ -69,7 +84,10 @@ export default async function DashboardPage() {
 
       <section aria-labelledby="tools-heading" className="space-y-4">
         <div>
-          <h2 id="tools-heading" className="text-lg font-semibold text-(--foreground)">
+          <h2
+            id="tools-heading"
+            className="text-lg font-semibold text-(--foreground)"
+          >
             Get job-ready
           </h2>
           <p className="mt-0.5 text-sm text-(--muted-foreground)">
@@ -94,7 +112,7 @@ async function getStats(userId: string) {
       acc[row.status] = (acc[row.status] ?? 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   return {
@@ -118,6 +136,7 @@ async function getAnalytics(userId: string) {
     .select({
       status: applications.status,
       appliedDate: applications.appliedDate,
+      followUpAt: applications.followUpAt,
     })
     .from(applications)
     .where(eq(applications.userId, userId));
@@ -126,6 +145,7 @@ async function getAnalytics(userId: string) {
     rows.map((r) => ({
       status: r.status,
       appliedDate: r.appliedDate,
-    }))
+      followUpAt: r.followUpAt ?? undefined,
+    })),
   );
 }

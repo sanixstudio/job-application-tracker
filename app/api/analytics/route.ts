@@ -24,12 +24,17 @@ export async function GET() {
       .select({
         status: applications.status,
         appliedDate: applications.appliedDate,
+        followUpAt: applications.followUpAt,
       })
       .from(applications)
       .where(eq(applications.userId, userId));
 
     const analytics = computeAnalytics(
-      rows.map((r) => ({ status: r.status, appliedDate: r.appliedDate }))
+      rows.map((r) => ({
+        status: r.status,
+        appliedDate: r.appliedDate,
+        followUpAt: r.followUpAt ?? undefined,
+      }))
     );
 
     return NextResponse.json({

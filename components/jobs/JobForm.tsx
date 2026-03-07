@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createJobSchema } from "@/lib/validations/job";
 import type { z } from "zod";
@@ -57,11 +58,25 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
       notes: "",
       salaryRange: "",
       location: "",
+      followUpAt: "",
+      resumeId: "",
     },
   });
 
   const status = watch("status");
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+
+  const { data: resumeData } = useQuery({
+    queryKey: ["resumes"],
+    queryFn: async () => {
+      const res = await fetch("/api/resumes");
+      if (res.status === 404) return null;
+      const json = await res.json();
+      if (!json.success) return null;
+      return json.data as { id: string; title: string };
+    },
+  });
+  const resume = resumeData ?? null;
 
   // Populate form when dialog opens (edit) or reset when opening for new job
   useEffect(() => {
@@ -77,6 +92,10 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         notes: initialData.notes ?? "",
         salaryRange: initialData.salaryRange ?? "",
         location: initialData.location ?? "",
+        followUpAt: initialData.followUpAt
+          ? new Date(initialData.followUpAt).toISOString().slice(0, 10)
+          : "",
+        resumeId: initialData.resumeId ?? "",
       });
     } else {
       reset({
@@ -89,16 +108,29 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         notes: "",
         salaryRange: "",
         location: "",
+        followUpAt: "",
+        resumeId: "",
       });
       setShowMoreOptions(false);
     }
-    if (initialData) setShowMoreOptions(!!(initialData.notes || initialData.salaryRange || initialData.location));
+    if (initialData)
+      setShowMoreOptions(
+        !!(
+          initialData.notes ||
+          initialData.salaryRange ||
+          initialData.location ||
+          initialData.followUpAt ||
+          initialData.resumeId
+        )
+      );
   }, [open, initialData, reset]);
 
   const handleFormSubmit: SubmitHandler<JobFormValues> = async (data) => {
     await onSubmit({
       ...data,
       applicationUrl: data.applicationUrl || undefined,
+      followUpAt: data.followUpAt && data.followUpAt.trim() ? data.followUpAt.trim() : undefined,
+      resumeId: data.resumeId && data.resumeId.trim() ? data.resumeId : undefined,
     });
     reset();
     onOpenChange(false);
@@ -194,6 +226,40 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
                 <SelectItem value="withdrawn">Withdrawn</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="followUpAt">Remind me to follow up</Label>
+              <Input
+                id="followUpAt"
+                type="date"
+                {...register("followUpAt")}
+              />
+              <p className="text-xs text-(--muted-foreground)">
+                Optional. Best: 5–7 business days after applying.
+              </p>
+            </div>
+            {resume && (
+              <div className="space-y-2">
+                <Label htmlFor="resumeId">Resume used</Label>
+                <Select
+                  value={watch("resumeId") || "none"}
+                  onValueChange={(v) => setValue("resumeId", v === "none" ? "" : v)}
+                >
+                  <SelectTrigger id="resumeId">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value={resume.id}>{resume.title}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-(--muted-foreground)">
+                  Track which resume you used for this application.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="border-t border-(--border) pt-4">

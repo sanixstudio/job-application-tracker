@@ -23,6 +23,9 @@ export const createJobSchema = z.object({
   notes: z.string().optional(),
   salaryRange: z.string().optional(),
   location: z.string().optional(),
+  /** ISO date string (YYYY-MM-DD) or null to clear. */
+  followUpAt: z.string().optional().nullable(),
+  resumeId: z.string().optional().nullable(),
 });
 
 /** Schema for updating a job application (PUT /api/jobs/[id]). */
@@ -35,6 +38,8 @@ export const updateJobSchema = z.object({
   notes: z.string().optional(),
   salaryRange: z.string().optional(),
   location: z.string().optional(),
+  followUpAt: z.string().optional().nullable(),
+  resumeId: z.string().optional().nullable(),
 });
 
 export type CreateJobInput = z.infer<typeof createJobSchema>;

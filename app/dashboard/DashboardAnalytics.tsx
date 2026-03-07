@@ -10,6 +10,8 @@ export interface DashboardAnalyticsProps {
   funnel: FunnelCounts;
   responseRate: number;
   staleCount: number;
+  /** Applications in Applied with no response 7–14 days (consider follow-up). */
+  noResponse7Count?: number;
 }
 
 const FUNNEL_STAGES: { key: keyof FunnelCounts; label: string; color: string }[] = [
@@ -30,6 +32,7 @@ export function DashboardAnalytics({
   funnel,
   responseRate,
   staleCount,
+  noResponse7Count = 0,
 }: DashboardAnalyticsProps) {
   if (funnel.total === 0) {
     return (
@@ -123,6 +126,30 @@ export function DashboardAnalytics({
             </div>
           </CardContent>
         </Card>
+
+        {noResponse7Count > 0 && (
+          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border-l-4 border-l-blue-500">
+            <CardContent className="p-5 flex items-center gap-4">
+              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                <Clock className="size-6" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-(--muted-foreground)">
+                  No response (7–14 days)
+                </p>
+                <p className="text-2xl font-bold tabular-nums text-(--foreground)">
+                  {noResponse7Count}
+                </p>
+                <p className="text-xs text-(--muted-foreground)">
+                  Good time to send a polite follow-up
+                </p>
+                <p className="text-xs text-(--primary) mt-1 font-medium">
+                  First follow-up: 5–7 business days after applying.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">

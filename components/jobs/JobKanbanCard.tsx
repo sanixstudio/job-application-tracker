@@ -54,6 +54,11 @@ export function JobKanbanCard({ job, isDragging, onOpenJob }: JobKanbanCardProps
   });
   const ageLabel = appliedAgo.replace("about ", "").replace("over ", ">");
 
+  const followUpDue =
+    job.followUpAt &&
+    new Date(job.followUpAt).getTime() <=
+      new Date().setHours(23, 59, 59, 999);
+
   return (
     <div
       ref={setNodeRef}
@@ -73,8 +78,15 @@ export function JobKanbanCard({ job, isDragging, onOpenJob }: JobKanbanCardProps
           <p className="mt-0.5 line-clamp-2 text-sm text-(--muted-foreground)">
             {job.jobTitle}
           </p>
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <span className="text-xs text-(--muted-foreground)">{ageLabel}</span>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-(--muted-foreground)">{ageLabel}</span>
+              {followUpDue && (
+                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Follow up
+                </span>
+              )}
+            </div>
             {onOpenJob && (
               <button
                 type="button"

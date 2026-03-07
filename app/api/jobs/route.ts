@@ -75,6 +75,12 @@ export async function POST(request: NextRequest) {
     const data = parsed.data;
     const id = nanoid();
     const now = new Date();
+    const followUpAt =
+      data.followUpAt && data.followUpAt.trim()
+        ? new Date(data.followUpAt.trim())
+        : null;
+    const resumeId =
+      data.resumeId && data.resumeId.trim() ? data.resumeId.trim() : null;
 
     const [newJob] = await db
       .insert(applications)
@@ -90,6 +96,8 @@ export async function POST(request: NextRequest) {
         notes: data.notes,
         salaryRange: data.salaryRange,
         location: data.location,
+        followUpAt,
+        resumeId,
         appliedDate: now,
         createdAt: now,
         updatedAt: now,

@@ -27,6 +27,10 @@ export interface Application {
   notes?: string;
   salaryRange?: string;
   location?: string;
+  /** Optional follow-up reminder date. */
+  followUpAt?: Date | null;
+  /** Resume used for this application (resume id). */
+  resumeId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +66,10 @@ export interface JobFormData {
   notes?: string;
   salaryRange?: string;
   location?: string;
+  /** Optional follow-up reminder date (ISO date string or Date). */
+  followUpAt?: string | null;
+  /** Resume id used for this application. */
+  resumeId?: string | null;
 }
 
 // ---------------------------------------------------------------------------
