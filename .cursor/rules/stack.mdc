@@ -26,6 +26,7 @@ globs: **/*.{tsx,ts,jsx,js,mjs,cjs,json}
 | AI          | OpenAI             | `openai` (env: `OPENAI_API_KEY`) |
 | Email parse | mammoth, googleapis | For parsing / Gmail |
 | Toasts      | Sonner             | `sonner` |
+| Drag & drop | @dnd-kit (core, sortable, utilities) | Kanban board |
 
 ## Dev / tooling
 
