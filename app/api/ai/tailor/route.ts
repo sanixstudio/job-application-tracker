@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { db } from "@/lib/db";
 import { resumes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { tailorRequestSchema } from "@/lib/validations/ai";
 import type { ResumeContent } from "@/types";
 
 /** Build a short plain-text version of resume for the prompt. */
@@ -53,17 +54,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const jobDescription = typeof body.jobDescription === "string" ? body.jobDescription.trim() : "";
-    if (!jobDescription) {
+    const parsed = tailorRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues
+        .map((issue) => issue.message)
+        .filter(Boolean)
+        .join("; ");
       return NextResponse.json(
-        { success: false, error: "Job description is required" },
+        { success: false, error: message || "Invalid request" },
         { status: 400 }
       );
     }
 
+    const { jobDescription, resumeContent: bodyResume } = parsed.data;
+
     let resumeContent: ResumeContent;
-    if (body.resumeContent && typeof body.resumeContent === "object") {
-      resumeContent = body.resumeContent as ResumeContent;
+    if (bodyResume && typeof bodyResume === "object" && Object.keys(bodyResume).length > 0) {
+      resumeContent = bodyResume as ResumeContent;
     } else {
       const [resume] = await db
         .select()

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { createJobSchema } from "@/lib/validations/job";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,26 +27,8 @@ import {
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Application, ApplicationStatus, JobFormData } from "@/types";
 
-const jobFormSchema = z.object({
-  jobTitle: z.string().min(1, "Job title is required"),
-  companyName: z.string().min(1, "Company name is required"),
-  jobUrl: z.string().url("Must be a valid URL"),
-  applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  status: z.enum([
-    "applied",
-    "interview_1",
-    "interview_2",
-    "interview_3",
-    "offer",
-    "rejected",
-    "withdrawn",
-  ]),
-  notes: z.string().optional(),
-  salaryRange: z.string().optional(),
-  location: z.string().optional(),
-});
-
-type JobFormValues = z.infer<typeof jobFormSchema>;
+/** Form values = parsed output of createJobSchema (status/source required after defaults). */
+type JobFormValues = z.output<typeof createJobSchema>;
 
 interface JobFormProps {
   open: boolean;
@@ -63,13 +46,14 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
     reset,
     formState: { errors, isSubmitting },
   } = useForm<JobFormValues>({
-    resolver: zodResolver(jobFormSchema),
+    resolver: zodResolver(createJobSchema) as Resolver<JobFormValues>,
     defaultValues: {
       jobTitle: "",
       companyName: "",
       jobUrl: "",
       applicationUrl: "",
       status: "applied",
+      source: "manual",
       notes: "",
       salaryRange: "",
       location: "",
@@ -89,6 +73,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         jobUrl: initialData.jobUrl,
         applicationUrl: initialData.applicationUrl ?? "",
         status: initialData.status,
+        source: initialData.source ?? "manual",
         notes: initialData.notes ?? "",
         salaryRange: initialData.salaryRange ?? "",
         location: initialData.location ?? "",
@@ -100,6 +85,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         jobUrl: "",
         applicationUrl: "",
         status: "applied",
+        source: "manual",
         notes: "",
         salaryRange: "",
         location: "",
@@ -109,7 +95,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
     if (initialData) setShowMoreOptions(!!(initialData.notes || initialData.salaryRange || initialData.location));
   }, [open, initialData, reset]);
 
-  const handleFormSubmit = async (data: JobFormValues) => {
+  const handleFormSubmit: SubmitHandler<JobFormValues> = async (data) => {
     await onSubmit({
       ...data,
       applicationUrl: data.applicationUrl || undefined,
