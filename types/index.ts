@@ -132,3 +132,33 @@ export interface UpdateResumeInput {
   title?: string;
   content?: ResumeContent;
 }
+
+// ---------------------------------------------------------------------------
+// Career profiles (LinkedIn / GitHub optimization)
+// ---------------------------------------------------------------------------
+
+export type CareerProfilePlatform = "linkedin" | "github";
+
+/** One section (e.g. headline, summary, bio): current text, AI-optimized text, and when it was generated. */
+export interface CareerProfileSectionContent {
+  current?: string;
+  optimized?: string;
+  generatedAt?: string;
+}
+
+/** Sections keyed by name: headline & summary (LinkedIn), bio (GitHub). */
+export interface CareerProfileSections {
+  headline?: CareerProfileSectionContent;
+  summary?: CareerProfileSectionContent;
+  bio?: CareerProfileSectionContent;
+}
+
+export interface CareerProfile {
+  id: string;
+  userId: string;
+  platform: CareerProfilePlatform;
+  profileUrl: string | null;
+  sections: CareerProfileSections;
+  createdAt: Date;
+  updatedAt: Date;
+}

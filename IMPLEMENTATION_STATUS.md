@@ -42,7 +42,7 @@
 
 ### Recent UX & layout (post–S7)
 
-- **Sidebar (shadcn-style):** App sidebar with nav (Dashboard, Applications, Resume, Email, Settings, Home), collapsible to icons on desktop, sheet drawer on mobile; sticky sidebar so it touches viewport bottom when content scrolls.
+- **Sidebar (shadcn-style):** App sidebar with nav (Dashboard, Applications, Resume, Career profiles, Email, Settings, Home), collapsible to icons on desktop, sheet drawer on mobile; sticky sidebar so it touches viewport bottom when content scrolls.
 - **Layout:** Main content area in document flow (no overlap with sidebar); header with trigger, theme toggle, user button.
 - **Applications page — Kanban:** Application Tracker with Board/List view toggle, date filter (All time / Last 90 days), drag-and-drop Kanban board (@dnd-kit) with columns Applied → Interviewing → Offer → Rejected → Withdrawn; status updates on drop via API. List view retains existing JobList grid.
 
@@ -78,9 +78,16 @@
 - **Source:** `docs/JOB_SEEKER_RESEARCH_AND_RECOMMENDATIONS.md`.
 - **Done:** Follow-up reminder per application (S9-1): `followUpAt` on applications, date picker in JobForm, "Follow up" badge on Kanban cards when due. Resume used per application (S9-3): `resumeId` on applications, resume selector in JobForm. No-response 7–14 day tier + CTA (S9-2) in DashboardAnalytics. Dashboard next actions card (S9-4): follow-up due, no response 7+, interviewing counts + link to Applications. Tips card (S9-5) on dashboard. Optional: S9-6 (follow-up template), S9-7 (CSV export) not started.
 
+### Career profiles (LinkedIn / GitHub optimization) — DONE
+
+- **Purpose:** Give users a clear reason for adding LinkedIn/GitHub: optimize headline, summary, and bio with AI, then copy and apply on each platform.
+- **DB:** `career_profiles` table (id, userId, platform, profile_url, sections JSONB). Sections: headline/summary (LinkedIn), bio (GitHub), each with `current`, `optimized`, `generatedAt`.
+- **API:** GET `/api/career-profiles` (list; seeds from user_settings if URLs exist; ensures both platforms have a row). GET/PATCH `/api/career-profiles/[id]`. POST `/api/career-profiles/[id]/optimize` (section + optional currentContent → AI suggestion, saved as optimized).
+- **UI:** `/dashboard/career-profiles` page with purpose copy, LinkedIn and GitHub cards: profile URL, per-section current (paste) + “Optimize with AI” + suggested text + “Copy to clipboard”. Nav: “Career profiles” in sidebar. Profile checklist: “Add & optimize LinkedIn/GitHub” links to this page; dialog copy explains AI optimization.
+
 ### Later (Phase III+)
 
-- LinkedIn/GitHub profile hints, interview prep, calendar sync (see product plan)
+- Interview prep, calendar sync (see product plan)
 - Email integration (Gmail OAuth, monitoring) — was in old “Phase 2” plan; now follows product plan order (extension + analytics first)
 
 ---

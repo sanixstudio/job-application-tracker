@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, LayoutDashboard, FileText, Mail, Settings, Home } from "lucide-react";
+import { Briefcase, LayoutDashboard, FileText, Mail, Settings, Home, UserCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/applications", label: "Applications", icon: Briefcase },
   { href: "/dashboard/resume", label: "Resume", icon: FileText },
+  { href: "/dashboard/career-profiles", label: "Career profiles", icon: UserCircle },
   { href: "/dashboard/email", label: "Email", icon: Mail },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

@@ -158,13 +158,12 @@ export function ProfileChecklistCard() {
               icon={<Linkedin className="h-4 w-4" />}
               label="Add LinkedIn profile"
               cta={
-                <button
-                  type="button"
-                  onClick={handleOpenEdit}
+                <Link
+                  href="/dashboard/career-profiles"
                   className="text-(--primary) hover:underline"
                 >
-                  Add LinkedIn
-                </button>
+                  Add & optimize LinkedIn
+                </Link>
               }
             />
             <ChecklistItem
@@ -172,13 +171,12 @@ export function ProfileChecklistCard() {
               icon={<Github className="h-4 w-4" />}
               label="Add GitHub profile"
               cta={
-                <button
-                  type="button"
-                  onClick={handleOpenEdit}
+                <Link
+                  href="/dashboard/career-profiles"
                   className="text-(--primary) hover:underline"
                 >
-                  Add GitHub
-                </button>
+                  Add & optimize GitHub
+                </Link>
               }
             />
             <ChecklistItem
@@ -211,10 +209,17 @@ export function ProfileChecklistCard() {
         )}
 
         {(hasLinkedIn || hasGitHub) && (
-          <Button variant="ghost" size="sm" className="gap-2" onClick={handleOpenEdit}>
-            <Pencil className="h-4 w-4" />
-            Edit profile URLs
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" size="sm" className="gap-2" onClick={handleOpenEdit}>
+              <Pencil className="h-4 w-4" />
+              Edit profile URLs
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <Link href="/dashboard/career-profiles">
+                Optimize with AI
+              </Link>
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -267,7 +272,8 @@ function ProfileUrlsDialog({
       <DialogHeader>
         <DialogTitle>Edit profile URLs</DialogTitle>
         <DialogDescription>
-          Add your LinkedIn and GitHub profile URLs. These are used for your job-ready checklist.
+          Add your LinkedIn and GitHub URLs so we can help you optimize your headline, summary, and
+          bio with AI. You can also edit and optimize from the Career profiles page.
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">
