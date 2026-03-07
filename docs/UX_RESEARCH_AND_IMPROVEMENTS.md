@@ -53,12 +53,23 @@ Sources: Medium/AllCloneScript, Excited Agency, DesignX, Observable.
 
 - **Unified card style**: Dashboard and resume pages share the same card treatment: `rounded-2xl`, `border-2`, subtle gradients, icon boxes, and clear headers so the product feels consistent and professional.
 
+### 2.6 Navigation: sidebar and dedicated pages
+
+- **Sidebar**: App uses a sidebar (shadcn-style) for Dashboard, Applications, Resume, Email, Settings, Home. Collapses to icons on desktop; sheet drawer on mobile. Main content stays in its own area (no overlap when resizing). Sticky sidebar fills viewport height when content scrolls.
+- **Dedicated pages**: Applications, Email, and Settings each have their own route so the dashboard stays an overview and power users can go straight to the right place.
+
+### 2.7 Applications: Kanban + list view
+
+- **Kanban board**: Application Tracker page offers a Kanban view (columns: Applied → Interviewing → Offer → Rejected → Withdrawn) with drag-and-drop (@dnd-kit). Moving a card updates status via API. Matches the “pipeline at a glance” pattern.
+- **View toggle**: Users can switch between Board (Kanban) and List (grid).
+- **Date filter**: “All time” / “Last 90 days” to focus on recent activity.
+
 ---
 
 ## 3. Future Considerations (not yet implemented)
 
-- **Kanban view**: Optional pipeline view (columns by status) for users who prefer a board over a grid of cards.
 - **Reminders / deadlines**: Optional follow-up or interview-date reminders (with email) to reduce missed opportunities.
+- **Phase III (product plan):** LinkedIn/GitHub profile hints, interview prep section, calendar sync.
 - **First-time banner**: Short “Add your first application to get started” when `stats.total === 0`, dismissible, linking to Applications or opening the add form.
 - **Resume page structure**: If the resume editor grows, consider tabs or stepped sections (Summary → Skills → Experience → Education) for progressive disclosure.
 - **Mobile**: Ensure touch targets and layout work well on small screens; test Add application and status updates on mobile.

@@ -33,40 +33,45 @@
 
 - ARCHITECTURE.md, SETUP.md, README, .env.example
 - docs/PRODUCT_AND_ENGINEERING_PLAN.md, docs/PROJECT_MANAGEMENT_PLAN.md
-- docs/sprints/SPRINT_01.md, SPRINT_02.md, SPRINT_03.md (all Done)
+- docs/sprints/SPRINT_01.md … SPRINT_07.md (all Done)
+
+### Sprint 7 — Profile checklist (M4) — DONE
+
+- **S7-1** Profile checklist backend: `linkedinUrl`/`githubUrl` on user_settings, GET/PATCH `/api/profile/checklist`, job-ready score
+- **S7-2** Profile checklist dashboard UI: ProfileChecklistCard on dashboard, score + CTAs
+
+### Recent UX & layout (post–S7)
+
+- **Sidebar (shadcn-style):** App sidebar with nav (Dashboard, Applications, Resume, Email, Settings, Home), collapsible to icons on desktop, sheet drawer on mobile; sticky sidebar so it touches viewport bottom when content scrolls.
+- **Layout:** Main content area in document flow (no overlap with sidebar); header with trigger, theme toggle, user button.
+- **Applications page — Kanban:** Application Tracker with Board/List view toggle, date filter (All time / Last 90 days), drag-and-drop Kanban board (@dnd-kit) with columns Applied → Interviewing → Offer → Rejected → Withdrawn; status updates on drop via API. List view retains existing JobList grid.
 
 ---
 
 ## 🚧 In Progress
 
-**Current sprint:** Sprint 7 — Profile checklist (M4). See `docs/sprints/SPRINT_07.md`. Sprints 1–6 (resume, tailor, extension, analytics, email parsing) are complete.
+**Current:** None. Phase II (M1–M4) complete. Next: Sprint 8 or Phase III kickoff (see `docs/sprints/SPRINT_08.md` and product plan).
 
 ---
 
-## 📋 Next (Phase II order, from product plan)
+## 📋 Next (from product plan)
 
 ### Sprint 4 — Chrome extension (M3) — DONE
 
-- **S4-1** Extension-friendly save API: auth (API key or session), `POST /api/ext/save` or reuse `POST /api/jobs` with extension auth, CORS/docs
-- **S4-2** Chrome extension (Manifest V3): popup with URL/title/company, “Save to Trackr”, link to app
+- **S4-1** Extension save API; **S4-2** Chrome extension (Manifest V3)
 
 ### Sprint 5 — Application analytics (M3) — DONE
 
-- **S5-1** Analytics API: funnel, response rate, no-response-14d (GET /api/analytics + server)
-- **S5-2** Analytics dashboard section: funnel chart, response rate and stale cards, empty state
+- **S5-1** Analytics API; **S5-2** Dashboard analytics section
 
 ### Sprint 6 — Email parsing (M4) — DONE
 
 - **S6-1** Inbound + parser; **S6-2** Suggestions API + dashboard UI
 
-### Sprint 7 — Profile checklist (M4) — NEXT
+### Sprint 8+ / Phase III (see docs/sprints/SPRINT_08.md)
 
-- **S7-1** Profile checklist backend: `linkedinUrl`/`githubUrl` on user_settings, GET/PATCH `/api/profile/checklist`, job-ready score
-- **S7-2** Profile checklist dashboard UI: “Get job-ready” card, checklist items + CTAs
-
-### After Sprint 7
-
-- **Profile checklist** — Job-ready score, onboarding polish (M4) — in Sprint 7
+- Optional polish: tests, onboarding, performance.
+- Phase III (product plan): LinkedIn/GitHub profile hints, interview prep, calendar sync.
 
 ### Later (Phase III+)
 
@@ -83,18 +88,18 @@
 | M1 Resume + export       | ✅ Done         | S1, S2                  |
 | M2 AI tailoring          | ✅ Done         | S3                      |
 | M3 Extension + analytics | ✅ Done         | S4, S5                  |
-| M4 Email + checklist     | 🚧 In progress | S6 (email parsing) done |
+| M4 Email + checklist     | ✅ Done         | S6, S7                  |
 
 
-**Overall:** Phase II in progress; foundation + resume + tailor + extension + analytics + email parsing complete. Next: profile checklist (Sprint 7).
+**Overall:** Phase II complete (M1–M4). Sprints 1–7 done. Next: Sprint 8 (polish or Phase III start). See `docs/sprints/SPRINT_08.md`.
 
 ---
 
 ## 🎯 Immediate Next Steps
 
-1. Implement **S7-1** (Profile checklist backend): add `linkedinUrl`/`githubUrl` to `user_settings`, migration, `GET /api/profile/checklist` and `PATCH /api/profile/checklist`.
-2. Implement **S7-2** (Profile checklist UI): “Get job-ready” section on dashboard with score, checklist items, and CTAs.
-3. Update `docs/sprints/SPRINT_07.md` as tasks complete.
+1. Choose focus for **Sprint 8**: polish (tests, onboarding, performance) or Phase III (e.g. interview prep section, LinkedIn/GitHub hints per product plan).
+2. Update `docs/sprints/SPRINT_08.md` with selected tasks and track progress.
+3. Keep `docs/PRODUCT_AND_ENGINEERING_PLAN.md` and `docs/PROJECT_MANAGEMENT_PLAN.md` as source of truth for roadmap and process.
 
 ---
 

@@ -3,6 +3,19 @@
 ## Project Overview
 Automate the job application process by monitoring Gmail for Builtin job emails, extracting job links, automating form submissions, and tracking applications in Google Sheets.
 
+## Current implementation (Phase II complete)
+
+**Source of truth for status:** `IMPLEMENTATION_STATUS.md`. **Roadmap:** `docs/PRODUCT_AND_ENGINEERING_PLAN.md`.
+
+- **Auth:** Clerk (sign-in, sign-up). Protected routes: `/dashboard(.*)` via middleware.
+- **Database:** Neon PostgreSQL, Drizzle ORM. Tables: `applications`, `resumes`, `user_settings`, `email_tracking`.
+- **App layout:** Sidebar (shadcn-style) with nav: Dashboard, Applications, Resume, Email, Settings, Home. Sidebar is in document flow on desktop (sticky, full height); sheet drawer on mobile. Main content area does not overlap sidebar.
+- **Routes:** `/dashboard` (overview), `/dashboard/applications` (Application Tracker: Kanban + list view), `/dashboard/resume`, `/dashboard/email`, `/dashboard/settings`. API: `/api/jobs`, `/api/resumes`, `/api/analytics`, `/api/profile/checklist`, `/api/email-suggestions`, `/api/ext/save`, `/api/inbound/email`, etc.
+- **Applications page:** Kanban board (@dnd-kit) with columns Applied → Interviewing → Offer → Rejected → Withdrawn; drag-and-drop updates status via `PUT /api/jobs/[id]`. View toggle (Board/List), date filter (All time / Last 90 days). List view uses existing JobList grid.
+- **Features shipped:** Job CRUD, resume builder + PDF export, AI resume tailoring, Chrome extension save API, analytics dashboard, email parsing (inbound + suggestions), profile checklist (job-ready score, LinkedIn/GitHub URLs).
+
+---
+
 ## Tech Stack
 
 ### Frontend
