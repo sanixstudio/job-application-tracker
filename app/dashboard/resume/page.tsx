@@ -693,8 +693,8 @@ export default function ResumePage() {
       <div className="space-y-6">
         <ResumeScoreCard score={liveScoreResult.score} feedback={liveScoreResult.feedback} />
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Edit resume</h1>
-          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+          <h1 className="text-2xl font-bold text-(--foreground)">Edit resume</h1>
+          <p className="text-sm text-(--muted-foreground) mt-0.5">
             Update your title and sections. More section types coming soon.
           </p>
         </div>
@@ -734,9 +734,9 @@ export default function ResumePage() {
             </div>
             <div className="space-y-2">
               <Label>Experience (work history)</Label>
-              <p className="text-xs text-[var(--muted-foreground)]">Add jobs with company, title, dates, and bullet points.</p>
+              <p className="text-xs text-(--muted-foreground)">Add jobs with company, title, dates, and bullet points.</p>
               {experienceItems.map((job, idx) => (
-                <div key={idx} className="rounded-lg border border-[var(--border)] p-4 space-y-3">
+                <div key={idx} className="rounded-lg border border-(--border) p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
                       placeholder="Company"
