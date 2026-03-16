@@ -15,7 +15,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 ## Tech Stack
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript
-- **UI**: shadcn/ui, Tailwind CSS v4
+- **UI**: shadcn/ui, Tailwind CSS v4 (use canonical variable syntax in classes: e.g. `bg-(--card)` not `bg-[var(--card)]`)
 - **Auth**: Clerk
 - **Data**: TanStack React Query, React Hook Form, Zod
 - **Database**: Neon PostgreSQL, Drizzle ORM
@@ -79,6 +79,7 @@ Track and manage your job applications in one place. Sign in with Clerk, store d
 
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture and design decisions
 - **[SETUP.md](./SETUP.md)** - Detailed setup guide for Gmail and Google Sheets APIs
+- **[docs/RESUME_SCORING.md](./docs/RESUME_SCORING.md)** - Resume scoring methodology, criteria, and research sources
 
 ## 🎯 Usage
 

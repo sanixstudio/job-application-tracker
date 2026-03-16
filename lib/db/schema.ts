@@ -6,7 +6,13 @@ import {
   index,
   jsonb,
 } from "drizzle-orm/pg-core";
-import type { ApplicationStatus, JobSource, ResumeContent } from "@/types";
+import type {
+  ApplicationStatus,
+  CareerProfilePlatform,
+  CareerProfileSections,
+  JobSource,
+  ResumeContent,
+} from "@/types";
 
 /**
  * Database schema for the Job Application Tracker.
@@ -34,6 +40,10 @@ export const applications = pgTable(
     notes: text("notes"),
     salaryRange: text("salary_range"),
     location: text("location"),
+    /** Optional reminder date for follow-up (e.g. 5–7 business days after applying). */
+    followUpAt: timestamp("follow_up_at", { mode: "date" }),
+    /** Resume used for this application (resumes.id). Enables "which resume got callbacks" later. */
+    resumeId: text("resume_id"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
@@ -111,6 +121,28 @@ export const resumes = pgTable(
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
   (table) => [index("idx_resumes_user_id").on(table.userId)]
+);
+
+/**
+ * Career profiles: LinkedIn and GitHub. Stores profile URL and per-section content (current + AI-optimized).
+ * Purpose: Let users see status and get AI suggestions for headline/summary/bio, then copy and apply on the platform.
+ */
+export const careerProfiles = pgTable(
+  "career_profiles",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    platform: text("platform").notNull().$type<CareerProfilePlatform>(),
+    profileUrl: text("profile_url"),
+    /** headline/summary (LinkedIn), bio (GitHub). Each: { current?, optimized?, generatedAt? }. */
+    sections: jsonb("sections").$type<CareerProfileSections>().notNull().default({}),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_career_profiles_user_id").on(table.userId),
+    index("idx_career_profiles_user_platform").on(table.userId, table.platform),
+  ]
 );
 
 /** Last 5 AI tailor responses per user for "Previous responses" in the Tailor modal. */

@@ -1,9 +1,10 @@
 /**
- * Analytics helpers for application funnel, response rate, and stale count.
+ * Analytics helpers for application funnel, response rate, no-response tiers, and follow-up due.
  * Used by the dashboard and optional GET /api/analytics.
  */
 
 const STALE_DAYS = 14;
+const NO_RESPONSE_7_DAYS = 7;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export interface FunnelCounts {
@@ -23,6 +24,12 @@ export interface AnalyticsResult {
   responseRate: number;
   /** Count of applications still in "applied" with no response for 14+ days. */
   staleCount: number;
+  /** Count of applications still in "applied" with no response for 7–14 days (consider follow-up). */
+  noResponse7Count: number;
+  /** Count of applications with followUpAt set and due today or overdue. */
+  followUpDueCount: number;
+  /** Count of applications in interview stages (interview_1/2/3) this week (by appliedDate or simple count). */
+  interviewingCount: number;
 }
 
 /**
@@ -76,15 +83,65 @@ export function staleCountFromRows(
   ).length;
 }
 
+export interface AnalyticsRow {
+  status: string;
+  appliedDate: Date;
+  followUpAt?: Date | null;
+}
+
 /**
- * Build full analytics from raw rows (status + appliedDate per application).
+ * Count applications still "applied" with no response for 7–14 days (consider follow-up).
  */
-export function computeAnalytics(
-  rows: { status: string; appliedDate: Date }[]
-): AnalyticsResult {
+export function noResponse7CountFromRows(rows: AnalyticsRow[]): number {
+  const now = Date.now();
+  const cutoff7 = now - NO_RESPONSE_7_DAYS * MS_PER_DAY;
+  const cutoff14 = now - STALE_DAYS * MS_PER_DAY;
+  return rows.filter((r) => {
+    if (r.status !== "applied") return false;
+    const t = new Date(r.appliedDate).getTime();
+    return t < cutoff7 && t >= cutoff14;
+  }).length;
+}
+
+/**
+ * Count applications with followUpAt set and due today or in the past.
+ */
+export function followUpDueCountFromRows(rows: AnalyticsRow[]): number {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayMs = todayStart.getTime();
+  return rows.filter((r) => {
+    if (!r.followUpAt) return false;
+    return new Date(r.followUpAt).getTime() <= todayMs + MS_PER_DAY - 1;
+  }).length;
+}
+
+/**
+ * Count applications currently in any interview stage.
+ */
+export function interviewingCountFromRows(rows: AnalyticsRow[]): number {
+  return rows.filter((r) =>
+    ["interview_1", "interview_2", "interview_3"].includes(r.status)
+  ).length;
+}
+
+/**
+ * Build full analytics from raw rows (status, appliedDate, optional followUpAt).
+ */
+export function computeAnalytics(rows: AnalyticsRow[]): AnalyticsResult {
   const statuses = rows.map((r) => r.status);
   const funnel = funnelFromStatuses(statuses);
   const responseRate = responseRateFromFunnel(funnel);
   const staleCount = staleCountFromRows(rows);
-  return { funnel, responseRate, staleCount };
+  const noResponse7Count = noResponse7CountFromRows(rows);
+  const followUpDueCount = followUpDueCountFromRows(rows);
+  const interviewingCount = interviewingCountFromRows(rows);
+  return {
+    funnel,
+    responseRate,
+    staleCount,
+    noResponse7Count,
+    followUpDueCount,
+    interviewingCount,
+  };
 }

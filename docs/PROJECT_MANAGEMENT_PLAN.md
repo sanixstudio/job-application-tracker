@@ -100,7 +100,7 @@ We don’t require full test coverage for every first version; we do add tests f
 |------|--------|
 | Product vision & roadmap | `docs/PRODUCT_AND_ENGINEERING_PLAN.md` |
 | This PM plan | `docs/PROJECT_MANAGEMENT_PLAN.md` |
-| Current sprint | `docs/sprints/SPRINT_07.md` (Sprints 1–6 done) |
+| Current sprint | `docs/sprints/SPRINT_08.md` (Sprints 1–7 done; Phase II complete) |
 | DB schema | `lib/db/schema.ts` |
 | Migrations | `lib/db/migrations/` |
 
@@ -108,4 +108,4 @@ We don’t require full test coverage for every first version; we do add tests f
 
 ## 8. Next Step
 
-**Current sprint:** **`docs/sprints/SPRINT_07.md`** (Profile checklist, M4). **Completed:** Sprints 1–6 (resume, PDF export, AI tailor, Chrome extension, analytics, email parsing). Implement **S7-1** (profile checklist backend: user_settings URLs, GET/PATCH `/api/profile/checklist`) then **S7-2** (profile checklist dashboard UI). When a task is done, set its status to **Done** in the sprint doc. At the end of the sprint we’ll close out and create the next sprint per the product plan.
+**Current sprint:** **`docs/sprints/SPRINT_08.md`** (Polish & next direction). **Completed:** Sprints 1–7 (Phase II M1–M4: resume, tailoring, extension, analytics, email parsing, profile checklist). Recent: sidebar layout, Applications Kanban board, view toggle. Choose Track A (polish), B (Phase III kickoff), or C (docs) in Sprint 8; update the sprint doc as tasks complete. Product plan Phase III: LinkedIn/GitHub hints, interview prep, calendar sync.

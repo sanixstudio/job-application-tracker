@@ -1,16 +1,17 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { applications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { computeAnalytics } from "@/lib/analytics";
 import { DashboardAnalytics } from "./DashboardAnalytics";
 import { DashboardStats } from "./DashboardStats";
-import { EmailInboundCard } from "./EmailInboundCard";
-import { EmailSuggestionsCard } from "./EmailSuggestionsCard";
-import { ExtensionKeyCard } from "./ExtensionKeyCard";
 import { ProfileChecklistCard } from "./ProfileChecklistCard";
-import { JobList } from "@/components/jobs/JobList";
+import { Button } from "@/components/ui/button";
+import { Briefcase, Mail } from "lucide-react";
+import { DashboardNextActions } from "./DashboardNextActions";
+import { DashboardTips } from "./DashboardTips";
 
 /**
  * Dashboard page — server component.
@@ -28,13 +29,14 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)] sm:text-4xl">
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
           Dashboard
         </h1>
-        <p className="text-base text-[var(--muted-foreground)]">
-          Track and manage your job applications in one place.
+        <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
+          Your pipeline at a glance. Track applications, response rate, and next
+          steps.
         </p>
       </header>
 
@@ -43,27 +45,56 @@ export default async function DashboardPage() {
           Pipeline overview
         </h2>
         <DashboardStats stats={stats} />
+        <DashboardNextActions
+          followUpDueCount={analytics.followUpDueCount}
+          noResponse7Count={analytics.noResponse7Count}
+          staleCount={analytics.staleCount}
+          interviewingCount={analytics.interviewingCount}
+          applicationsLink="/dashboard/applications"
+        />
         <DashboardAnalytics
           funnel={analytics.funnel}
           responseRate={analytics.responseRate}
           staleCount={analytics.staleCount}
+          noResponse7Count={analytics.noResponse7Count}
         />
+        <DashboardTips />
+      </section>
+
+      <section
+        aria-labelledby="quick-links-heading"
+        className="flex flex-wrap gap-3"
+      >
+        <h2 id="quick-links-heading" className="sr-only">
+          Quick actions
+        </h2>
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link href="/dashboard/applications">
+            <Briefcase className="size-4" aria-hidden />
+            View all applications
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link href="/dashboard/email">
+            <Mail className="size-4" aria-hidden />
+            Check email suggestions
+          </Link>
+        </Button>
       </section>
 
       <section aria-labelledby="tools-heading" className="space-y-4">
-        <h2 id="tools-heading" className="text-lg font-semibold text-[var(--foreground)]">
-          Get set up
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-          <ProfileChecklistCard />
-          <ExtensionKeyCard />
+        <div>
+          <h2
+            id="tools-heading"
+            className="text-lg font-semibold text-(--foreground)"
+          >
+            Get job-ready
+          </h2>
+          <p className="mt-0.5 text-sm text-(--muted-foreground)">
+            Complete your profile to get the most out of Trackr.
+          </p>
         </div>
-        <EmailInboundCard />
-        <EmailSuggestionsCard />
-      </section>
-
-      <section id="jobs" className="scroll-mt-8">
-        <JobList />
+        <ProfileChecklistCard />
       </section>
     </div>
   );
@@ -81,7 +112,7 @@ async function getStats(userId: string) {
       acc[row.status] = (acc[row.status] ?? 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   return {
@@ -105,6 +136,7 @@ async function getAnalytics(userId: string) {
     .select({
       status: applications.status,
       appliedDate: applications.appliedDate,
+      followUpAt: applications.followUpAt,
     })
     .from(applications)
     .where(eq(applications.userId, userId));
@@ -113,6 +145,7 @@ async function getAnalytics(userId: string) {
     rows.map((r) => ({
       status: r.status,
       appliedDate: r.appliedDate,
-    }))
+      followUpAt: r.followUpAt ?? undefined,
+    })),
   );
 }

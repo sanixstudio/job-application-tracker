@@ -18,41 +18,41 @@ const statConfig = [
     title: "Total",
     valueKey: "total" as const,
     icon: Briefcase,
-    iconBg: "bg-[var(--muted)]",
-    iconColor: "text-[var(--muted-foreground)]",
+    iconBg: "bg-(--muted)",
+    iconColor: "text-(--muted-foreground)",
     cardAccent: "",
   },
   {
     title: "Applied",
     valueKey: "applied" as const,
     icon: Clock,
-    iconBg: "bg-[var(--status-applied)]/15",
-    iconColor: "text-[var(--status-applied)]",
-    cardAccent: "border-l-4 border-l-[var(--status-applied)]",
+    iconBg: "bg-(--status-applied)/15",
+    iconColor: "text-(--status-applied)",
+    cardAccent: "border-l-4 border-l-(--status-applied)",
   },
   {
     title: "Interviews",
     valueKey: "interviews" as const,
     icon: CheckCircle2,
-    iconBg: "bg-[var(--status-interview)]/15",
-    iconColor: "text-[var(--status-interview)]",
-    cardAccent: "border-l-4 border-l-[var(--status-interview)]",
+    iconBg: "bg-(--status-interview)/15",
+    iconColor: "text-(--status-interview)",
+    cardAccent: "border-l-4 border-l-(--status-interview)",
   },
   {
     title: "Offers",
     valueKey: "offers" as const,
     icon: Trophy,
-    iconBg: "bg-[var(--status-offer)]/15",
-    iconColor: "text-[var(--status-offer)]",
-    cardAccent: "border-l-4 border-l-[var(--status-offer)]",
+    iconBg: "bg-(--status-offer)/15",
+    iconColor: "text-(--status-offer)",
+    cardAccent: "border-l-4 border-l-(--status-offer)",
   },
   {
     title: "Rejected",
     valueKey: "rejected" as const,
     icon: XCircle,
-    iconBg: "bg-[var(--status-rejected)]/15",
-    iconColor: "text-[var(--status-rejected)]",
-    cardAccent: "border-l-4 border-l-[var(--status-rejected)]",
+    iconBg: "bg-(--status-rejected)/15",
+    iconColor: "text-(--status-rejected)",
+    cardAccent: "border-l-4 border-l-(--status-rejected)",
   },
 ];
 
@@ -71,22 +71,22 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           key={title}
           role="group"
           aria-label={`${title}: ${stats[valueKey]}`}
-          className={`rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md hover:border-[var(--border)]/80 ${cardAccent}`}
+          className={`rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${cardAccent}`}
         >
-          <CardContent className="p-5 flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <span
-                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
+                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-2xl ${iconBg} ${iconColor}`}
                 aria-hidden
               >
-                <Icon className="size-7" strokeWidth={1.75} />
+                <Icon className="size-6" strokeWidth={1.75} />
               </span>
             </div>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-sm font-medium text-[var(--stat-label)] tracking-tight">
+              <p className="text-sm font-medium text-(--muted-foreground) tracking-tight">
                 {title}
               </p>
-              <p className="text-3xl font-bold tabular-nums tracking-tight text-[var(--stat-value)]">
+              <p className="text-3xl font-bold tabular-nums tracking-tight text-(--foreground)">
                 {stats[valueKey]}
               </p>
             </div>

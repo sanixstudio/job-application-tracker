@@ -1,13 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { FunnelCounts } from "@/lib/analytics";
-import { BarChart3, Percent, Clock } from "lucide-react";
+import { BarChart3, Percent, Clock, Plus } from "lucide-react";
 
 export interface DashboardAnalyticsProps {
   funnel: FunnelCounts;
   responseRate: number;
   staleCount: number;
+  /** Applications in Applied with no response 7–14 days (consider follow-up). */
+  noResponse7Count?: number;
 }
 
 const FUNNEL_STAGES: { key: keyof FunnelCounts; label: string; color: string }[] = [
@@ -28,22 +32,33 @@ export function DashboardAnalytics({
   funnel,
   responseRate,
   staleCount,
+  noResponse7Count = 0,
 }: DashboardAnalyticsProps) {
   if (funnel.total === 0) {
     return (
       <section aria-label="Application analytics">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BarChart3 className="size-5" />
-              Analytics
-            </CardTitle>
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-4">
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+                <BarChart3 className="size-7" strokeWidth={1.5} />
+              </span>
+              <div className="min-w-0">
+                <CardTitle className="text-lg font-semibold text-(--foreground)">
+                  Analytics
+                </CardTitle>
+                <p className="mt-0.5 text-sm text-(--muted-foreground)">
+                  Add applications to see your funnel, response rate, and no-response metrics.
+                </p>
+                <Button asChild size="sm" className="mt-3 gap-2">
+                  <Link href="/dashboard/applications">
+                    <Plus className="size-4" aria-hidden />
+                    Add your first application
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-[var(--muted-foreground)]">
-              Add applications to see your funnel, response rate, and no-response metrics.
-            </p>
-          </CardContent>
         </Card>
       </section>
     );
@@ -55,73 +70,110 @@ export function DashboardAnalytics({
   );
 
   return (
-    <section aria-label="Application analytics" className="space-y-4">
-      <h2 className="text-lg font-semibold text-[var(--foreground)]">
-        Analytics
-      </h2>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <CardContent className="p-5 flex items-center gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--status-interview)]/15 text-[var(--status-interview)]">
-              <Percent className="size-6" strokeWidth={1.75} />
-            </span>
-            <div>
-              <p className="text-sm font-medium text-[var(--muted-foreground)]">
-                Response rate
-              </p>
-              <p className="text-2xl font-bold tabular-nums text-[var(--foreground)]">
-                {responseRate}%
-              </p>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Applications that reached interview or offer
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <CardContent className="p-5 flex items-center gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
-              <Clock className="size-6" strokeWidth={1.75} />
-            </span>
-            <div>
-              <p className="text-sm font-medium text-[var(--muted-foreground)]">
-                No response (14+ days)
-              </p>
-              <p className="text-2xl font-bold tabular-nums text-[var(--foreground)]">
-                {staleCount}
-              </p>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Still in Applied with no update
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <section aria-label="Application analytics" className="space-y-6">
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-(--primary)/10 text-(--primary)">
+          <BarChart3 className="size-5" strokeWidth={1.5} />
+        </span>
+        <h2 className="text-lg font-semibold text-(--foreground)">
+          Analytics
+        </h2>
       </div>
 
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base font-medium">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+          <CardContent className="p-5 flex items-center gap-4">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--status-interview)/15 text-(--status-interview)">
+              <Percent className="size-6" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-(--muted-foreground)">
+                Response rate
+              </p>
+              <p className="text-2xl font-bold tabular-nums text-(--foreground)">
+                {responseRate}%
+              </p>
+              <p className="text-xs text-(--muted-foreground)">
+                Applications that reached interview or offer
+              </p>
+              <p className="text-xs text-(--muted-foreground) mt-1">
+                Benchmark: 20%+ is good; below 20% try tailoring your resume per role.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+          <CardContent className="p-5 flex items-center gap-4">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <Clock className="size-6" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-(--muted-foreground)">
+                No response (14+ days)
+              </p>
+              <p className="text-2xl font-bold tabular-nums text-(--foreground)">
+                {staleCount}
+              </p>
+              <p className="text-xs text-(--muted-foreground)">
+                Still in Applied with no update
+              </p>
+              {staleCount > 0 && (
+                <p className="text-xs text-(--primary) mt-1 font-medium">
+                  Consider following up to improve response rate.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {noResponse7Count > 0 && (
+          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border-l-4 border-l-blue-500">
+            <CardContent className="p-5 flex items-center gap-4">
+              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                <Clock className="size-6" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-(--muted-foreground)">
+                  No response (7–14 days)
+                </p>
+                <p className="text-2xl font-bold tabular-nums text-(--foreground)">
+                  {noResponse7Count}
+                </p>
+                <p className="text-xs text-(--muted-foreground)">
+                  Good time to send a polite follow-up
+                </p>
+                <p className="text-xs text-(--primary) mt-1 font-medium">
+                  First follow-up: 5–7 business days after applying.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">
+        <CardHeader className="border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent px-6 py-4">
+          <CardTitle className="text-base font-semibold text-(--foreground)">
             Pipeline funnel
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-6 py-4">
           {FUNNEL_STAGES.map(({ key, label, color }) => {
             const count = funnel[key];
             const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
             return (
               <div key={key} className="space-y-1.5">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium text-[var(--foreground)]">
+                  <span className="font-medium text-(--foreground)">
                     {label}
                   </span>
-                  <span className="tabular-nums text-[var(--muted-foreground)]">
+                  <span className="tabular-nums text-(--muted-foreground)">
                     {count}
                   </span>
                 </div>
                 <div
-                  className="h-3 w-full overflow-hidden rounded-full bg-[var(--muted)]"
+                  className="h-3 w-full overflow-hidden rounded-full bg-(--muted)"
                   role="presentation"
                 >
                   <div

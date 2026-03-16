@@ -42,17 +42,23 @@ export function ExtensionKeyCard() {
   };
 
   return (
-    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Key className="h-5 w-5" />
-          Save from browser
-        </CardTitle>
-        <CardDescription>
-          Generate an API key for the Trackr Chrome extension. Paste the key into the extension to save jobs from any job board.
-        </CardDescription>
+    <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+      <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
+        <div className="flex items-start gap-4">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+            <Key className="size-6" strokeWidth={1.5} />
+          </span>
+          <div className="min-w-0">
+            <CardTitle className="text-lg font-semibold text-(--foreground)">
+              Save from browser
+            </CardTitle>
+            <CardDescription className="mt-0.5">
+              Generate an API key for the Trackr Chrome extension. Paste the key into the extension to save jobs from any job board.
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 px-6 py-5">
         <Button
           onClick={handleGenerate}
           disabled={loading}
@@ -67,8 +73,8 @@ export function ExtensionKeyCard() {
           {key ? "Regenerate API key" : "Generate API key"}
         </Button>
         {key && (
-          <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--muted)]/30 px-3 py-2">
-            <code className="flex-1 truncate text-sm text-[var(--foreground)]">
+          <div className="flex items-center gap-2 rounded-lg border border-(--border) bg-(--muted)/30 px-3 py-2">
+            <code className="flex-1 truncate text-sm text-(--foreground)">
               {key}
             </code>
             <Button
@@ -78,7 +84,7 @@ export function ExtensionKeyCard() {
               onClick={handleCopy}
             >
               {copied ? (
-                <Check className="h-4 w-4 text-[var(--primary)]" />
+                <Check className="h-4 w-4 text-(--primary)" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

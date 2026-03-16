@@ -1,0 +1,43 @@
+---
+description: Project tech stack and key package versions. Single source so the model does not invent or assume versions.
+globs: **/*.{tsx,ts,jsx,js,mjs,cjs,json}
+---
+
+# Stack (job-application-tracker)
+
+**Authoritative versions:** See `package.json`. Do not assume or invent versions.
+
+## Runtime
+
+| Layer        | Technology        | Notes |
+|-------------|--------------------|-------|
+| Framework   | Next.js 16 (App Router) | `next` in package.json |
+| UI library  | React 19           | `react`, `react-dom` |
+| Auth        | Clerk              | `@clerk/nextjs` |
+| Styling     | Tailwind CSS v4    | `tailwindcss`, `@tailwindcss/postcss` |
+| Components  | shadcn/ui, Radix   | `radix-ui`, `@radix-ui/react-slot`, etc. |
+| State       | Zustand (client)   | `zustand` |
+| Server state| TanStack Query     | `@tanstack/react-query` |
+| Forms       | React Hook Form    | `react-hook-form` |
+| Validation  | Zod                | `zod` (v4 in this project) |
+| DB          | Drizzle ORM        | `drizzle-orm`, `drizzle-kit` |
+| DB host     | Neon (PostgreSQL)  | `@neondatabase/serverless` |
+| PDF         | jspdf              | `jspdf` |
+| AI          | OpenAI             | `openai` (env: `OPENAI_API_KEY`) |
+| Email parse | mammoth, googleapis | For parsing / Gmail |
+| Toasts      | Sonner             | `sonner` |
+| Drag & drop | @dnd-kit (core, sortable, utilities) | Kanban board |
+
+## Dev / tooling
+
+- TypeScript 5
+- ESLint 9, eslint-config-next 16
+- Tailwind v4 (canonical classes: see `tailwind.mdc`)
+
+## What we do not use
+
+- Prisma (we use Drizzle)
+- NextAuth (we use Clerk)
+- Redux (we use Zustand + TanStack Query)
+
+When adding dependencies or referring to APIs, check `package.json` and official docs for the exact package and version.

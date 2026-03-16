@@ -93,6 +93,19 @@ export async function PUT(
 
     const data = parsed.data;
     const now = new Date();
+    const followUpAt =
+      data.followUpAt !== undefined
+        ? data.followUpAt && data.followUpAt.trim()
+          ? new Date(data.followUpAt.trim())
+          : null
+        : undefined;
+    const resumeId =
+      data.resumeId !== undefined
+        ? data.resumeId && data.resumeId.trim()
+          ? data.resumeId.trim()
+          : null
+        : undefined;
+
     const [updated] = await db
       .update(applications)
       .set({
@@ -106,6 +119,8 @@ export async function PUT(
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.salaryRange !== undefined && { salaryRange: data.salaryRange }),
         ...(data.location !== undefined && { location: data.location }),
+        ...(followUpAt !== undefined && { followUpAt }),
+        ...(resumeId !== undefined && { resumeId }),
         updatedAt: now,
       })
       .where(eq(applications.id, id))

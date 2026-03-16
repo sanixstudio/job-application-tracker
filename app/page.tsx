@@ -20,21 +20,21 @@ export default async function LandingPage() {
   const { userId } = await auth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)]">
+    <div className="min-h-screen flex flex-col bg-(--background)">
       <a
         href="#main-content"
-        className="sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:block focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 focus:bg-[var(--background)] focus:text-[var(--foreground)] focus:no-underline focus:outline-none"
+        className="sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:block focus:px-4 focus:py-2 focus:rounded-md focus:ring-2 focus:ring-(--ring) focus:ring-offset-2 focus:bg-(--background) focus:text-(--foreground) focus:no-underline focus:outline-none"
       >
         Skip to main content
       </a>
       {/* Header */}
-      <header className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-(--border) bg-(--background)/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold text-lg tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2"
+            className="flex items-center gap-2 font-semibold text-lg tracking-tight rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--ring) focus-visible:ring-offset-2"
           >
-            <Briefcase className="h-6 w-6 text-[var(--primary)]" />
+            <Briefcase className="h-6 w-6 text-(--primary)" />
             Trackr
           </Link>
           <nav className="flex items-center gap-2">
@@ -70,10 +70,10 @@ export default async function LandingPage() {
       <main id="main-content" className="flex-1">
         <section className="container mx-auto px-4 py-24 md:py-32 lg:py-40">
           <div className="mx-auto max-w-3xl text-center space-y-10">
-            <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="text-4xl font-bold tracking-tight text-(--foreground) sm:text-5xl md:text-6xl lg:text-7xl">
               Never lose track of a job application again
             </h1>
-            <p className="text-lg md:text-xl text-[var(--muted-foreground)] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-(--muted-foreground) max-w-2xl mx-auto leading-relaxed">
               One place to track applications, interviews, and offers. Update
               status in one click and see your pipeline at a glance.
             </p>
@@ -81,7 +81,7 @@ export default async function LandingPage() {
               <Button
                 asChild
                 size="lg"
-                className="gap-2 text-base px-8 shadow-lg shadow-[var(--primary)]/20 hover:shadow-xl hover:shadow-[var(--primary)]/25 transition-shadow"
+                className="gap-2 text-base px-8 shadow-lg shadow-(--primary)/20 hover:shadow-xl hover:shadow-(--primary)/25 transition-shadow"
               >
                 <Link href="/dashboard">
                   {userId ? "Go to dashboard" : "Start tracking"}
@@ -100,12 +100,12 @@ export default async function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="border-t border-[var(--border)] bg-[var(--muted)]/40 py-24 md:py-32">
+        <section className="border-t border-(--border) bg-(--muted)/40 py-24 md:py-32">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold text-[var(--foreground)] text-center sm:text-3xl mb-3">
+            <h2 className="text-2xl font-bold text-(--foreground) text-center sm:text-3xl mb-3">
               Everything you need to stay on top of your job search
             </h2>
-            <p className="text-[var(--muted-foreground)] text-center max-w-xl mx-auto mb-16">
+            <p className="text-(--muted-foreground) text-center max-w-xl mx-auto mb-16">
               Built for developers and job seekers who want clarity without the clutter.
             </p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
@@ -135,11 +135,11 @@ export default async function LandingPage() {
 
         {/* CTA */}
         <section className="container mx-auto px-4 py-24 md:py-32">
-          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-[var(--border)] bg-[var(--card)] p-12 md:p-16 shadow-lg border-l-4 border-l-[var(--primary)]">
-            <h2 className="text-2xl font-bold text-[var(--foreground)] sm:text-3xl mb-3">
+          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-(--border) bg-(--card) p-12 md:p-16 shadow-lg border-l-4 border-l-(--primary)">
+            <h2 className="text-2xl font-bold text-(--foreground) sm:text-3xl mb-3">
               Ready to organize your job search?
             </h2>
-            <p className="text-[var(--muted-foreground)] mb-10">
+            <p className="text-(--muted-foreground) mb-10">
               {userId
                 ? "Head to your dashboard to manage your applications."
                 : "Create a free account and start tracking in under a minute."}
@@ -154,8 +154,8 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[var(--border)] py-10">
-        <div className="container mx-auto px-4 text-center text-sm text-[var(--muted-foreground)]">
+      <footer className="border-t border-(--border) py-10">
+        <div className="container mx-auto px-4 text-center text-sm text-(--muted-foreground)">
           © {new Date().getFullYear()} Trackr. Job application tracking made simple.
         </div>
       </footer>
@@ -173,12 +173,12 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-left shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)]">
+    <div className="rounded-2xl border border-(--border) bg-(--card) p-6 text-left shadow-sm transition-all duration-200 hover:shadow-md">
+      <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-(--primary)/10 text-(--primary)">
         {icon}
       </div>
-      <h3 className="font-semibold text-[var(--foreground)] mb-2">{title}</h3>
-      <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+      <h3 className="font-semibold text-(--foreground) mb-2">{title}</h3>
+      <p className="text-sm text-(--muted-foreground) leading-relaxed">
         {description}
       </p>
     </div>

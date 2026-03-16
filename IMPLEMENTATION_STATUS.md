@@ -21,7 +21,7 @@
 - Resume types and validation (`lib/validations/resume.ts`)
 - Resume page: create/edit (title + Summary), view mode
 - PDF export: `GET /api/resumes/[id]/export?format=pdf` (jspdf), Download PDF button
-- Nav: Resume link in dashboard layout
+- Nav: Dashboard, Applications, Resume, Email, Settings, Home (dedicated pages for applications and email; extension key in Settings)
 
 ### Phase II — M2: AI resume tailoring (Sprint 3)
 
@@ -33,44 +33,61 @@
 
 - ARCHITECTURE.md, SETUP.md, README, .env.example
 - docs/PRODUCT_AND_ENGINEERING_PLAN.md, docs/PROJECT_MANAGEMENT_PLAN.md
-- docs/sprints/SPRINT_01.md, SPRINT_02.md, SPRINT_03.md (all Done)
+- docs/sprints/SPRINT_01.md … SPRINT_07.md (all Done)
+
+### Sprint 7 — Profile checklist (M4) — DONE
+
+- **S7-1** Profile checklist backend: `linkedinUrl`/`githubUrl` on user_settings, GET/PATCH `/api/profile/checklist`, job-ready score
+- **S7-2** Profile checklist dashboard UI: ProfileChecklistCard on dashboard, score + CTAs
+
+### Recent UX & layout (post–S7)
+
+- **Sidebar (shadcn-style):** App sidebar with nav (Dashboard, Applications, Resume, Career profiles, Email, Settings, Home), collapsible to icons on desktop, sheet drawer on mobile; sticky sidebar so it touches viewport bottom when content scrolls.
+- **Layout:** Main content area in document flow (no overlap with sidebar); header with trigger, theme toggle, user button.
+- **Applications page — Kanban:** Application Tracker with Board/List view toggle, date filter (All time / Last 90 days), drag-and-drop Kanban board (@dnd-kit) with columns Applied → Interviewing → Offer → Rejected → Withdrawn; status updates on drop via API. List view retains existing JobList grid.
 
 ---
 
 ## 🚧 In Progress
 
-**Current sprint:** Sprint 7 — Profile checklist (M4). See `docs/sprints/SPRINT_07.md`. Sprints 1–6 (resume, tailor, extension, analytics, email parsing) are complete.
+**Current:** None. Phase II (M1–M4) complete. Next: Sprint 8 or Phase III kickoff (see `docs/sprints/SPRINT_08.md` and product plan).
 
 ---
 
-## 📋 Next (Phase II order, from product plan)
+## 📋 Next (from product plan)
 
 ### Sprint 4 — Chrome extension (M3) — DONE
 
-- **S4-1** Extension-friendly save API: auth (API key or session), `POST /api/ext/save` or reuse `POST /api/jobs` with extension auth, CORS/docs
-- **S4-2** Chrome extension (Manifest V3): popup with URL/title/company, “Save to Trackr”, link to app
+- **S4-1** Extension save API; **S4-2** Chrome extension (Manifest V3)
 
 ### Sprint 5 — Application analytics (M3) — DONE
 
-- **S5-1** Analytics API: funnel, response rate, no-response-14d (GET /api/analytics + server)
-- **S5-2** Analytics dashboard section: funnel chart, response rate and stale cards, empty state
+- **S5-1** Analytics API; **S5-2** Dashboard analytics section
 
 ### Sprint 6 — Email parsing (M4) — DONE
 
 - **S6-1** Inbound + parser; **S6-2** Suggestions API + dashboard UI
 
-### Sprint 7 — Profile checklist (M4) — NEXT
+### Sprint 8+ / Phase III (see docs/sprints/SPRINT_08.md)
 
-- **S7-1** Profile checklist backend: `linkedinUrl`/`githubUrl` on user_settings, GET/PATCH `/api/profile/checklist`, job-ready score
-- **S7-2** Profile checklist dashboard UI: “Get job-ready” card, checklist items + CTAs
+- Optional polish: tests, onboarding, performance.
+- Phase III (product plan): LinkedIn/GitHub profile hints, interview prep, calendar sync.
 
-### After Sprint 7
+### Sprint 9 — Follow-up & next actions (research-backed) — DONE
 
-- **Profile checklist** — Job-ready score, onboarding polish (M4) — in Sprint 7
+- **Source:** `docs/JOB_SEEKER_RESEARCH_AND_RECOMMENDATIONS.md`.
+- **Done:** Follow-up reminder per application (S9-1): `followUpAt` on applications, date picker in JobForm, "Follow up" badge on Kanban cards when due. Resume used per application (S9-3): `resumeId` on applications, resume selector in JobForm. No-response 7–14 day tier + CTA (S9-2) in DashboardAnalytics. Dashboard next actions card (S9-4): follow-up due, no response 7+, interviewing counts + link to Applications. Tips card (S9-5) on dashboard. Optional: S9-6 (follow-up template), S9-7 (CSV export) not started.
+
+### Career profiles (LinkedIn / GitHub optimization) — DONE
+
+- **Purpose:** Give users a clear reason for adding LinkedIn/GitHub: optimize headline, summary, and bio with AI, then copy and apply on each platform.
+- **DB:** `career_profiles` table (id, userId, platform, profile_url, sections JSONB). Sections: headline/summary (LinkedIn), bio (GitHub), each with `current`, `optimized`, `generatedAt`.
+- **API:** GET `/api/career-profiles` (list; seeds from user_settings if URLs exist; ensures both platforms have a row). GET/PATCH `/api/career-profiles/[id]`. POST `/api/career-profiles/[id]/optimize` (section + optional currentContent → AI suggestion, saved as optimized).
+- **UI:** `/dashboard/career-profiles` page with purpose copy, LinkedIn and GitHub cards: profile URL, per-section current (paste) + “Optimize with AI” + suggested text + “Copy to clipboard”. Nav: “Career profiles” in sidebar. Profile checklist: “Add & optimize LinkedIn/GitHub” links to this page; dialog copy explains AI optimization.
 
 ### Later (Phase III+)
 
-- LinkedIn/GitHub profile hints, interview prep, calendar sync (see product plan)
+- Interview prep, calendar sync (see product plan)
 - Email integration (Gmail OAuth, monitoring) — was in old “Phase 2” plan; now follows product plan order (extension + analytics first)
 
 ---
@@ -83,18 +100,18 @@
 | M1 Resume + export       | ✅ Done         | S1, S2                  |
 | M2 AI tailoring          | ✅ Done         | S3                      |
 | M3 Extension + analytics | ✅ Done         | S4, S5                  |
-| M4 Email + checklist     | 🚧 In progress | S6 (email parsing) done |
+| M4 Email + checklist     | ✅ Done         | S6, S7                  |
 
 
-**Overall:** Phase II in progress; foundation + resume + tailor + extension + analytics + email parsing complete. Next: profile checklist (Sprint 7).
+**Overall:** Phase II complete (M1–M4). Sprints 1–7 done. Next: Sprint 8 (polish or Phase III start). See `docs/sprints/SPRINT_08.md`.
 
 ---
 
 ## 🎯 Immediate Next Steps
 
-1. Implement **S7-1** (Profile checklist backend): add `linkedinUrl`/`githubUrl` to `user_settings`, migration, `GET /api/profile/checklist` and `PATCH /api/profile/checklist`.
-2. Implement **S7-2** (Profile checklist UI): “Get job-ready” section on dashboard with score, checklist items, and CTAs.
-3. Update `docs/sprints/SPRINT_07.md` as tasks complete.
+1. Choose focus for **Sprint 8**: polish (tests, onboarding, performance) or Phase III (e.g. interview prep section, LinkedIn/GitHub hints per product plan).
+2. Update `docs/sprints/SPRINT_08.md` with selected tasks and track progress.
+3. Keep `docs/PRODUCT_AND_ENGINEERING_PLAN.md` and `docs/PROJECT_MANAGEMENT_PLAN.md` as source of truth for roadmap and process.
 
 ---
 

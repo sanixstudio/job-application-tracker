@@ -36,6 +36,20 @@
       "when": 1772680000000,
       "tag": "0005_profile_checklist",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772853722788,
+      "tag": "0005_light_makkari",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772854176767,
+      "tag": "0006_salty_chimera",
+      "breakpoints": true
     }
   ]
 }

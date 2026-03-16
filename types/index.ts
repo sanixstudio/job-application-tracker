@@ -27,6 +27,10 @@ export interface Application {
   notes?: string;
   salaryRange?: string;
   location?: string;
+  /** Optional follow-up reminder date. */
+  followUpAt?: Date | null;
+  /** Resume used for this application (resume id). */
+  resumeId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +66,10 @@ export interface JobFormData {
   notes?: string;
   salaryRange?: string;
   location?: string;
+  /** Optional follow-up reminder date (ISO date string or Date). */
+  followUpAt?: string | null;
+  /** Resume id used for this application. */
+  resumeId?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,4 +131,34 @@ export interface CreateResumeInput {
 export interface UpdateResumeInput {
   title?: string;
   content?: ResumeContent;
+}
+
+// ---------------------------------------------------------------------------
+// Career profiles (LinkedIn / GitHub optimization)
+// ---------------------------------------------------------------------------
+
+export type CareerProfilePlatform = "linkedin" | "github";
+
+/** One section (e.g. headline, summary, bio): current text, AI-optimized text, and when it was generated. */
+export interface CareerProfileSectionContent {
+  current?: string;
+  optimized?: string;
+  generatedAt?: string;
+}
+
+/** Sections keyed by name: headline & summary (LinkedIn), bio (GitHub). */
+export interface CareerProfileSections {
+  headline?: CareerProfileSectionContent;
+  summary?: CareerProfileSectionContent;
+  bio?: CareerProfileSectionContent;
+}
+
+export interface CareerProfile {
+  id: string;
+  userId: string;
+  platform: CareerProfilePlatform;
+  profileUrl: string | null;
+  sections: CareerProfileSections;
+  createdAt: Date;
+  updatedAt: Date;
 }

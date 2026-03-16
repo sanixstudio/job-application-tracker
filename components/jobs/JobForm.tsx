@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { createJobSchema } from "@/lib/validations/job";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,28 +25,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Application, ApplicationStatus, JobFormData } from "@/types";
 
-const jobFormSchema = z.object({
-  jobTitle: z.string().min(1, "Job title is required"),
-  companyName: z.string().min(1, "Company name is required"),
-  jobUrl: z.string().url("Must be a valid URL"),
-  applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  status: z.enum([
-    "applied",
-    "interview_1",
-    "interview_2",
-    "interview_3",
-    "offer",
-    "rejected",
-    "withdrawn",
-  ]),
-  notes: z.string().optional(),
-  salaryRange: z.string().optional(),
-  location: z.string().optional(),
-});
-
-type JobFormValues = z.infer<typeof jobFormSchema>;
+/** Form values = parsed output of createJobSchema (status/source required after defaults). */
+type JobFormValues = z.output<typeof createJobSchema>;
 
 interface JobFormProps {
   open: boolean;
@@ -62,20 +47,36 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
     reset,
     formState: { errors, isSubmitting },
   } = useForm<JobFormValues>({
-    resolver: zodResolver(jobFormSchema),
+    resolver: zodResolver(createJobSchema) as Resolver<JobFormValues>,
     defaultValues: {
       jobTitle: "",
       companyName: "",
       jobUrl: "",
       applicationUrl: "",
       status: "applied",
+      source: "manual",
       notes: "",
       salaryRange: "",
       location: "",
+      followUpAt: "",
+      resumeId: "",
     },
   });
 
   const status = watch("status");
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
+
+  const { data: resumeData } = useQuery({
+    queryKey: ["resumes"],
+    queryFn: async () => {
+      const res = await fetch("/api/resumes");
+      if (res.status === 404) return null;
+      const json = await res.json();
+      if (!json.success) return null;
+      return json.data as { id: string; title: string };
+    },
+  });
+  const resume = resumeData ?? null;
 
   // Populate form when dialog opens (edit) or reset when opening for new job
   useEffect(() => {
@@ -87,9 +88,14 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         jobUrl: initialData.jobUrl,
         applicationUrl: initialData.applicationUrl ?? "",
         status: initialData.status,
+        source: initialData.source ?? "manual",
         notes: initialData.notes ?? "",
         salaryRange: initialData.salaryRange ?? "",
         location: initialData.location ?? "",
+        followUpAt: initialData.followUpAt
+          ? new Date(initialData.followUpAt).toISOString().slice(0, 10)
+          : "",
+        resumeId: initialData.resumeId ?? "",
       });
     } else {
       reset({
@@ -98,17 +104,33 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
         jobUrl: "",
         applicationUrl: "",
         status: "applied",
+        source: "manual",
         notes: "",
         salaryRange: "",
         location: "",
+        followUpAt: "",
+        resumeId: "",
       });
+      setShowMoreOptions(false);
     }
+    if (initialData)
+      setShowMoreOptions(
+        !!(
+          initialData.notes ||
+          initialData.salaryRange ||
+          initialData.location ||
+          initialData.followUpAt ||
+          initialData.resumeId
+        )
+      );
   }, [open, initialData, reset]);
 
-  const handleFormSubmit = async (data: JobFormValues) => {
+  const handleFormSubmit: SubmitHandler<JobFormValues> = async (data) => {
     await onSubmit({
       ...data,
       applicationUrl: data.applicationUrl || undefined,
+      followUpAt: data.followUpAt && data.followUpAt.trim() ? data.followUpAt.trim() : undefined,
+      resumeId: data.resumeId && data.resumeId.trim() ? data.resumeId : undefined,
     });
     reset();
     onOpenChange(false);
@@ -117,7 +139,7 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-[var(--border)]">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-(--border)">
           <DialogTitle className="text-xl">
             {initialData ? "Edit application" : "Add application"}
           </DialogTitle>
@@ -185,59 +207,114 @@ export function JobForm({ open, onOpenChange, onSubmit, initialData }: JobFormPr
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={status}
-                onValueChange={(value) => setValue("status", value as ApplicationStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="applied">Applied</SelectItem>
-                  <SelectItem value="interview_1">Interview 1</SelectItem>
-                  <SelectItem value="interview_2">Interview 2</SelectItem>
-                  <SelectItem value="interview_3">Interview 3</SelectItem>
-                  <SelectItem value="offer">Offer</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="withdrawn">Withdrawn</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(value) => setValue("status", value as ApplicationStatus)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="applied">Applied</SelectItem>
+                <SelectItem value="interview_1">Interview 1</SelectItem>
+                <SelectItem value="interview_2">Interview 2</SelectItem>
+                <SelectItem value="interview_3">Interview 3</SelectItem>
+                <SelectItem value="offer">Offer</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="withdrawn">Withdrawn</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="followUpAt">Remind me to follow up</Label>
               <Input
-                id="location"
-                {...register("location")}
-                placeholder="e.g., Remote, New York, NY"
+                id="followUpAt"
+                type="date"
+                {...register("followUpAt")}
               />
+              <p className="text-xs text-(--muted-foreground)">
+                Optional. Best: 5–7 business days after applying.
+              </p>
             </div>
+            {resume && (
+              <div className="space-y-2">
+                <Label htmlFor="resumeId">Resume used</Label>
+                <Select
+                  value={watch("resumeId") || "none"}
+                  onValueChange={(v) => setValue("resumeId", v === "none" ? "" : v)}
+                >
+                  <SelectTrigger id="resumeId">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value={resume.id}>{resume.title}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-(--muted-foreground)">
+                  Track which resume you used for this application.
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="salaryRange">Salary Range</Label>
-            <Input
-              id="salaryRange"
-              {...register("salaryRange")}
-              placeholder="e.g., $100k - $150k"
-            />
+          <div className="border-t border-(--border) pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-(--muted-foreground) hover:text-(--foreground)"
+              onClick={() => setShowMoreOptions((v) => !v)}
+            >
+              {showMoreOptions ? (
+                <>
+                  <ChevronUp className="size-4" aria-hidden />
+                  Fewer options
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="size-4" aria-hidden />
+                  More options (location, salary, notes)
+                </>
+              )}
+            </Button>
+            {showMoreOptions && (
+              <div className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    {...register("location")}
+                    placeholder="e.g., Remote, New York, NY"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="salaryRange">Salary range</Label>
+                  <Input
+                    id="salaryRange"
+                    {...register("salaryRange")}
+                    placeholder="e.g., $100k - $150k"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    {...register("notes")}
+                    placeholder="Any additional notes about this application..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              {...register("notes")}
-              placeholder="Any additional notes about this application..."
-              rows={4}
-            />
-          </div>
-          </div>
-
-          <DialogFooter className="px-6 py-4 shrink-0 border-t border-[var(--border)] bg-[var(--muted)]/30">
+          <DialogFooter className="px-6 py-4 shrink-0 border-t border-(--border) bg-(--muted)/30">
             <Button
               type="button"
               variant="outline"

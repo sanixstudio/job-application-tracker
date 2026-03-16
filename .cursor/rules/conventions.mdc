@@ -1,0 +1,45 @@
+---
+description: Naming, file layout, and code conventions for the codebase. Keeps patterns consistent.
+globs: **/*.{tsx,ts,jsx,js,mjs,cjs}
+---
+
+# Conventions
+
+## App structure (Next.js App Router)
+
+- **Routes:** `app/` — `page.tsx` per route; `layout.tsx` for shared shell; `loading.tsx` / `error.tsx` where needed.
+- **Dashboard:** `app/dashboard/` — home at `page.tsx`; sub-routes: `applications/`, `email/`, `resume/`, `settings/` (each with own `page.tsx`).
+- **Auth:** Clerk — `app/sign-in/`, `app/sign-up/` (Catch-all routes). Protected routes under `app/dashboard/`; middleware enforces `/dashboard(.*)`.
+
+## Components
+
+- **Location:** `components/` — feature folders (`jobs/`, `ui/`) or single files. `ui/` = shadcn primitives; do not fork randomly.
+- **Client components:** Add `"use client"` only when needed (interactivity, browser APIs, client-only libs). Prefer Server Components.
+- **Naming:** PascalCase for components and files (`JobCard.tsx`, `DashboardStats.tsx`). One main component per file; co-locate small helpers in the same file if not reused.
+
+## Lib and server-only logic
+
+- **DB:** `lib/db/` — `schema.ts` (Drizzle), `index.ts` (connection). Use server-only modules for queries; no DB access from client.
+- **Validation:** `lib/validations/` — Zod schemas per domain (`job.ts`, `resume.ts`, `profile.ts`). Treat as runtime contract for untrusted input.
+- **API:** `app/api/` — route handlers; validate with Zod; enforce auth (Clerk) and authz on the server.
+- **Utils:** `lib/utils.ts` — shared helpers (e.g. `cn`). Keep pure and side-effect-free where possible.
+
+## State and data
+
+- **Server state:** TanStack Query (fetch, cache, refetch). Not Zustand.
+- **Client UI state:** Local state first; Zustand only when shared across trees or complex.
+- **Forms:** React Hook Form + Zod (via `@hookform/resolvers`). Do not duplicate form state with React Query or Zustand.
+- **URL state:** Use for shareable/filter state (e.g. search params) when appropriate; avoid duplicating with local/store.
+
+## Styling
+
+- Tailwind only. Use canonical class names (see `tailwind.mdc`): e.g. `bg-(--card)`, `bg-linear-to-b`, `from-(--primary)/10`.
+- Prefer shadcn components and design tokens (CSS variables) for a coherent design system.
+
+## Naming in code
+
+- **Files:** camelCase for non-components (`resume-score.ts`); PascalCase for React components.
+- **API routes:** REST-style — `GET/POST /api/jobs`, `GET/PUT/DELETE /api/jobs/[id]`. Same for `/api/resumes`, `/api/analytics`, `/api/profile/checklist`, etc.
+- **Env:** `.env.local`; document in `.env.example`. Never commit secrets; no client-side exposure of API keys.
+
+Stay consistent with existing patterns in the repo. When in doubt, match the style of the file or folder you are editing.

@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ClipboardList, Check, Circle, Loader2, Pencil, FileText, Linkedin, Github, Briefcase } from "lucide-react";
+import { ClipboardList, Check, Loader2, Pencil, FileText, Linkedin, Github, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -87,24 +87,24 @@ export function ProfileChecklistCard() {
 
   if (isLoading || !checklist) {
     return (
-      <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-        <CardHeader className="pb-2">
+      <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">
+        <CardHeader className="pb-2 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
             Get job-ready
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-6">
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-xl bg-[var(--muted)] animate-pulse shrink-0" />
+            <div className="size-12 rounded-2xl bg-(--muted) animate-pulse shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-3/4 max-w-[200px] rounded bg-[var(--muted)] animate-pulse" />
-              <div className="h-3 w-1/2 max-w-[120px] rounded bg-[var(--muted)] animate-pulse" />
+              <div className="h-4 w-3/4 max-w-[200px] rounded bg-(--muted) animate-pulse" />
+              <div className="h-3 w-1/2 max-w-[120px] rounded bg-(--muted) animate-pulse" />
             </div>
           </div>
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-5 rounded bg-[var(--muted)] animate-pulse" style={{ width: `${80 - i * 15}%` }} />
+              <div key={i} className="h-5 rounded bg-(--muted) animate-pulse" style={{ width: `${80 - i * 15}%` }} />
             ))}
           </div>
         </CardContent>
@@ -116,24 +116,30 @@ export function ProfileChecklistCard() {
   const allComplete = completedCount === totalCount;
 
   return (
-    <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <ClipboardList className="h-5 w-5" />
-          Get job-ready
-        </CardTitle>
-        <CardDescription>
-          Complete these steps to get the most out of Trackr. Your profile is {score}% complete.
-        </CardDescription>
+    <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+      <CardHeader className="pb-4 pt-6 px-6 border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent">
+        <div className="flex items-start gap-4">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+            <ClipboardList className="size-6" strokeWidth={1.5} />
+          </span>
+          <div className="min-w-0">
+            <CardTitle className="text-lg font-semibold text-(--foreground)">
+              Get job-ready
+            </CardTitle>
+            <CardDescription className="mt-0.5">
+              Complete these steps to get the most out of Trackr. Your profile is {score}% complete.
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-6 py-5">
         <div className="flex items-center gap-2 text-sm">
-          <span className="font-medium text-[var(--foreground)]">
+          <span className="font-medium text-(--foreground)">
             {completedCount}/{totalCount} complete
           </span>
-          <div className="flex-1 h-2 rounded-full bg-[var(--muted)] overflow-hidden">
+          <div className="flex-1 h-2 rounded-full bg-(--muted) overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--primary)] transition-all"
+              className="h-full rounded-full bg-(--primary) transition-all"
               style={{ width: `${score}%` }}
             />
           </div>
@@ -155,7 +161,7 @@ export function ProfileChecklistCard() {
                 <button
                   type="button"
                   onClick={handleOpenEdit}
-                  className="text-[var(--primary)] hover:underline"
+                  className="text-(--primary) hover:underline"
                 >
                   Add LinkedIn
                 </button>
@@ -169,7 +175,7 @@ export function ProfileChecklistCard() {
                 <button
                   type="button"
                   onClick={handleOpenEdit}
-                  className="text-[var(--primary)] hover:underline"
+                  className="text-(--primary) hover:underline"
                 >
                   Add GitHub
                 </button>
@@ -180,9 +186,9 @@ export function ProfileChecklistCard() {
               icon={<Briefcase className="h-4 w-4" />}
               label="Add your first application"
               cta={
-                <a href="#jobs" className="text-[var(--primary)] hover:underline">
+                <Link href="/dashboard/applications" className="text-(--primary) hover:underline">
                   Add application
-                </a>
+                </Link>
               }
             />
           </ul>
@@ -198,7 +204,7 @@ export function ProfileChecklistCard() {
         </Dialog>
 
         {allComplete && (
-          <p className="text-sm font-medium text-[var(--primary)] flex items-center gap-2">
+          <p className="text-sm font-medium text-(--primary) flex items-center gap-2">
             <Check className="h-4 w-4" />
             You&apos;re job-ready!
           </p>
@@ -229,13 +235,13 @@ function ChecklistItem({
   return (
     <li className="flex items-center gap-3 text-sm">
       {done ? (
-        <Check className="h-5 w-5 shrink-0 text-[var(--primary)]" />
+        <Check className="h-5 w-5 shrink-0 text-(--primary)" />
       ) : (
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-[var(--muted-foreground)]">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-(--muted-foreground)">
           {icon}
         </span>
       )}
-      <span className={done ? "text-[var(--muted-foreground)]" : "text-[var(--foreground)]"}>{label}</span>
+      <span className={done ? "text-(--muted-foreground)" : "text-(--foreground)"}>{label}</span>
       {!done && <span className="ml-auto">{cta}</span>}
     </li>
   );
@@ -261,7 +267,7 @@ function ProfileUrlsDialog({
       <DialogHeader>
         <DialogTitle>Edit profile URLs</DialogTitle>
         <DialogDescription>
-          Add your LinkedIn and GitHub profile URLs. These are used for your job-ready checklist.
+          Add your LinkedIn and GitHub profile URLs for your job-ready checklist.
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">

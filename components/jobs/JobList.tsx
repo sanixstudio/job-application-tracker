@@ -2,11 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { JobCard } from "./JobCard";
 import { JobForm } from "./JobForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Loader2, ChevronDown, Filter } from "lucide-react";
+import { Plus, Loader2, ChevronDown, Filter, Briefcase, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import type { Application, JobFormData } from "@/types";
 import {
@@ -75,7 +76,12 @@ async function deleteJob(id: string): Promise<void> {
   if (!data.success) throw new Error(data.error || "Failed to delete job");
 }
 
-export function JobList() {
+interface JobListProps {
+  /** When false, omit the in-component heading (for use on dedicated /dashboard/applications page). */
+  showHeading?: boolean;
+}
+
+export function JobList({ showHeading = true }: JobListProps) {
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Application | null>(null);
@@ -158,17 +164,19 @@ export function JobList() {
   const filterLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "Filter";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
-            Applications
-          </h2>
-          <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-            Update status in one click and keep your pipeline moving.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+        {showHeading && (
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-(--foreground)">
+              Applications
+            </h2>
+            <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
+              Update status in one click and keep your pipeline moving.
+            </p>
+          </div>
+        )}
+        <div className={cn("flex items-center gap-2", !showHeading && "w-full justify-end")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="min-w-[160px] justify-between gap-2">
@@ -182,10 +190,10 @@ export function JobList() {
                 <DropdownMenuItem
                   key={opt.value}
                   onClick={() => setStatusFilter(opt.value)}
-                  className={statusFilter === opt.value ? "bg-[var(--accent)]" : undefined}
+                  className={statusFilter === opt.value ? "bg-(--accent)" : undefined}
                 >
                   {statusFilter === opt.value ? (
-                    <Check className="h-4 w-4 mr-2 text-[var(--primary)]" />
+                    <Check className="h-4 w-4 mr-2 text-(--primary)" />
                   ) : (
                     <span className="w-4 mr-2" aria-hidden />
                   )}
@@ -206,17 +214,17 @@ export function JobList() {
           {[1, 2, 3].map((i) => (
             <Card
               key={i}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--card)] overflow-hidden"
+              className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden"
             >
-              <div className="p-5 space-y-4">
+              <div className="p-6 space-y-4">
                 <div className="flex justify-between gap-2">
-                  <div className="h-5 flex-1 max-w-[70%] rounded-md bg-[var(--muted)] animate-pulse" />
-                  <div className="h-8 w-24 rounded-md bg-[var(--muted)] animate-pulse shrink-0" />
+                  <div className="h-5 flex-1 max-w-[70%] rounded-md bg-(--muted) animate-pulse" />
+                  <div className="h-9 w-24 rounded-md bg-(--muted) animate-pulse shrink-0" />
                 </div>
-                <div className="h-4 w-3/4 rounded-md bg-[var(--muted)] animate-pulse" />
+                <div className="h-4 w-3/4 rounded-md bg-(--muted) animate-pulse" />
                 <div className="flex gap-2 pt-2">
-                  <div className="h-9 w-24 rounded-md bg-[var(--muted)] animate-pulse" />
-                  <div className="h-9 w-28 rounded-md bg-[var(--muted)] animate-pulse" />
+                  <div className="h-9 w-24 rounded-md bg-(--muted) animate-pulse" />
+                  <div className="h-9 w-28 rounded-md bg-(--muted) animate-pulse" />
                 </div>
               </div>
             </Card>
@@ -225,30 +233,40 @@ export function JobList() {
       )}
 
       {error && (
-        <Card className="rounded-2xl border-[var(--destructive)]/40 bg-[var(--status-rejected-muted)] p-6">
-          <p className="text-sm font-medium text-[var(--destructive)]">
-            Failed to load applications. {String(error)}
-          </p>
-          <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            Check your connection and try again.
-          </p>
+        <Card className="rounded-2xl border-2 border-(--destructive)/20 bg-(--card) bg-linear-to-b from-(--destructive)/5 to-transparent shadow-lg overflow-hidden">
+          <div className="p-6 flex gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--destructive)/10">
+              <AlertTriangle className="size-6 text-(--destructive)" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-(--foreground)">
+                Failed to load applications
+              </p>
+              <p className="mt-1 text-sm text-(--destructive)" role="alert">
+                {String(error)}
+              </p>
+              <p className="text-xs text-(--muted-foreground) mt-1">
+                Check your connection and try again.
+              </p>
+            </div>
+          </div>
         </Card>
       )}
 
       {!isLoading && !error && jobs && (
         <>
           {jobs.length === 0 ? (
-            <Card className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-14 text-center">
-              <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-[var(--muted)] text-[var(--muted-foreground)]">
-                <Plus className="size-7" strokeWidth={1.5} />
+            <Card className="rounded-2xl border-2 border-(--primary)/20 bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent p-10 sm:p-14 text-center shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+              <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
+                <Briefcase className="size-10" strokeWidth={1.5} aria-hidden />
               </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+              <h3 className="text-xl font-semibold text-(--foreground)">
                 No applications yet
               </h3>
-              <p className="text-sm text-[var(--muted-foreground)] max-w-sm mx-auto mb-8">
+              <p className="mt-2 text-sm text-(--muted-foreground) max-w-sm mx-auto leading-relaxed">
                 Add your first job to start tracking. You can update status anytime with one click.
               </p>
-              <Button onClick={() => setIsFormOpen(true)} size="lg" className="gap-2 shadow-sm">
+              <Button onClick={() => setIsFormOpen(true)} size="lg" className="gap-2 mt-8">
                 <Plus className="h-4 w-4" />
                 Add application
               </Button>
@@ -286,7 +304,7 @@ export function JobList() {
             <AlertDialogTitle>Delete application?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently remove{" "}
-              <span className="font-medium text-[var(--foreground)]">
+              <span className="font-medium text-(--foreground)">
                 {jobToDelete?.jobTitle}
               </span>{" "}
               at {jobToDelete?.companyName}. This action cannot be undone.
