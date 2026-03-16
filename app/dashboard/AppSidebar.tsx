@@ -33,7 +33,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar collapsible="icon" side="left">
+    <Sidebar collapsible="icon" side="left" className="min-w-60!">
       <SidebarHeader className="border-(--sidebar-border)">
         <Link
           href="/dashboard"
