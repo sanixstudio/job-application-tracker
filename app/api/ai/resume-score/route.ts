@@ -25,11 +25,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = resumeScoreRequestSchema
-      .extend({
-        content: ({} as any) as unknown as import("zod").ZodType<ResumeContent>,
-      })
-      .safeParse(body);
+    // Validate the structured parts (profile + jdProfile) with Zod, then
+    // accept resume content as-is (existing ResumeContent shape).
+    const parsed = resumeScoreRequestSchema.safeParse({
+      profile: body.profile,
+      jdProfile: body.jdProfile,
+    });
 
     if (!parsed.success) {
       const message = parsed.error.issues
@@ -42,10 +43,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { jdProfile, content } = parsed.data as {
-      jdProfile: { required_skills: string[]; title: string };
-      content: ResumeContent;
+    const jdProfile = parsed.data.jdProfile as {
+      required_skills: string[];
+      title: string;
     };
+    const content = body.content as ResumeContent;
 
     const jdText = [
       jdProfile.title,

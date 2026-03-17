@@ -20,6 +20,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/applications", label: "Applications", icon: Briefcase },
   { href: "/dashboard/resume", label: "Resume", icon: FileText },
+  { href: "/dashboard/resume-os", label: "Resume OS (beta)", icon: FileText },
   { href: "/dashboard/career-profiles", label: "Career profiles", icon: UserCircle, disabled: true },
   { href: "/dashboard/email", label: "Email", icon: Mail },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },

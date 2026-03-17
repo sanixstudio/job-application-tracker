@@ -50,7 +50,7 @@
 
 ## 🚧 In Progress
 
-**Current:** None. Phase II (M1–M4) complete. Next: Sprint 8 or Phase III kickoff (see `docs/sprints/SPRINT_08.md` and product plan).
+**Current:** Flagship Resume OS — core APIs and workspace done; export templates, migration, and polish/guardrails remaining (see plan and `docs/RESUME_OS.md`). Phase II (M1–M4) otherwise complete. Next: Sprint 8 or Phase III kickoff (see `docs/sprints/SPRINT_08.md` and product plan).
 
 ---
 
@@ -85,6 +85,19 @@
 - **API:** GET `/api/career-profiles` (list; seeds from user_settings if URLs exist; ensures both platforms have a row). GET/PATCH `/api/career-profiles/[id]`. POST `/api/career-profiles/[id]/optimize` (section + optional currentContent → AI suggestion, saved as optimized).
 - **UI:** `/dashboard/career-profiles` page with purpose copy, LinkedIn and GitHub cards: profile URL, per-section current (paste) + “Optimize with AI” + suggested text + “Copy to clipboard”. Nav: “Career profiles” in sidebar. Profile checklist: “Add & optimize LinkedIn/GitHub” links to this page; dialog copy explains AI optimization.
 
+### Flagship Resume OS (Resume SaaS Operating Manual)
+
+- **Purpose:** JD-aware resume workspace aligned with the Operating Manual (ATS-safe, human-sounding, defensible). This is the flagship resume experience; the original Resume page remains the stable editor + PDF export.
+- **Docs/plan:** `docs/RESUME_OS.md` (overview + Resume vs Resume OS); execution plan in `.cursor/plans/` (Flagship Resume OS).
+- **Model:** `lib/resume/model.ts` — `CandidateProfile`, `ExperienceEntry`, `AchievementFact`, `MetricFact`, `JobDescriptionProfile`, `ResumeBullet`, `ResumeVersion`, `ResumeVersionAudit`, `ResumeOsContent`. Zod schemas in `lib/validations/resume-os.ts`.
+- **APIs:**  
+  - `POST /api/ai/jd-profile` — raw JD → structured `JobDescriptionProfile` (title, seniority, required/preferred skills, domain terms, signal phrases, hiring priorities).  
+  - `POST /api/ai/resume-score` — `profile` + `jdProfile` + `content` (current `ResumeContent`) → general score, match score, keyword coverage (`lib/resume-score`).  
+  - `POST /api/ai/bullets` — `mode` (generate | humanize), `jdProfile`, `facts` or `existingBullets` → `ResumeBullet[]`.  
+  - `POST /api/ai/resume-audit` — `resumeText` + optional `jdProfile` → ATS safety, JD alignment, experience quality, human quality, defensibility, total, `riskFlags[]`.
+- **UI:** `/dashboard/resume-os` — "Resume OS (beta)" in sidebar. Left: Target job (paste JD → Analyze job description → parsed title, skills, hiring priorities). Right: Resume preview + "Tailor resume to this job" → calls score, bullets, audit in parallel; shows match scores, audit summary, suggested bullets (copy into experience).
+- **Remaining (plan):** Export templates (version + layout params on `/api/resumes/[id]/export`), one-way migration (current sections → `CandidateProfile` + Master version), polish/guardrails (prompts + copy).
+
 ### Later (Phase III+)
 
 - Interview prep, calendar sync (see product plan)
@@ -109,9 +122,10 @@
 
 ## 🎯 Immediate Next Steps
 
-1. Choose focus for **Sprint 8**: polish (tests, onboarding, performance) or Phase III (e.g. interview prep section, LinkedIn/GitHub hints per product plan).
-2. Update `docs/sprints/SPRINT_08.md` with selected tasks and track progress.
-3. Keep `docs/PRODUCT_AND_ENGINEERING_PLAN.md` and `docs/PROJECT_MANAGEMENT_PLAN.md` as source of truth for roadmap and process.
+1. **Flagship Resume OS:** Finish export (version/layout), migration (sections → profile + Master version), polish/guardrails. See `docs/RESUME_OS.md`.
+2. Choose focus for **Sprint 8**: polish (tests, onboarding, performance) or Phase III (e.g. interview prep section, LinkedIn/GitHub hints per product plan).
+3. Update `docs/sprints/SPRINT_08.md` with selected tasks and track progress.
+4. Keep `docs/PRODUCT_AND_ENGINEERING_PLAN.md` and `docs/PROJECT_MANAGEMENT_PLAN.md` as source of truth for roadmap and process.
 
 ---
 
