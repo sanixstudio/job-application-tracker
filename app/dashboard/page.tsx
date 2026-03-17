@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -9,13 +9,13 @@ import { DashboardAnalytics } from "./DashboardAnalytics";
 import { DashboardStats } from "./DashboardStats";
 import { ProfileChecklistCard } from "./ProfileChecklistCard";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Mail } from "lucide-react";
+import { Briefcase, Mail, ArrowRight } from "lucide-react";
 import { DashboardNextActions } from "./DashboardNextActions";
 import { DashboardTips } from "./DashboardTips";
 
 /**
  * Dashboard page — server component.
- * Fetches stats server-side; JobList is client (React Query + forms).
+ * Fetches stats server-side. Layout: outcome-first (next actions → stats → analytics → tips & profile).
  */
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -23,79 +23,93 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [stats, analytics] = await Promise.all([
+  const [user, stats, analytics] = await Promise.all([
+    currentUser(),
     getStats(userId),
     getAnalytics(userId),
   ]);
 
+  const firstName = user?.firstName ?? null;
+  const greeting = firstName
+    ? `Hi ${firstName}`
+    : "Welcome back";
+
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
-          Your pipeline at a glance. Track applications, response rate, and next
-          steps.
-        </p>
+    <div className="space-y-8">
+      {/* Hero: greeting + one-line summary + primary CTA */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-(--foreground) sm:text-3xl">
+            {greeting}
+          </h1>
+          <p className="mt-1 text-sm text-(--muted-foreground) max-w-xl">
+            Your pipeline at a glance. Track applications, response rate, and next steps.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild size="sm" className="gap-2 shadow-sm">
+            <Link href="/dashboard/applications">
+              <Briefcase className="size-4" aria-hidden />
+              View applications
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link href="/dashboard/email">
+              <Mail className="size-4" aria-hidden />
+              Email suggestions
+            </Link>
+          </Button>
+        </div>
       </header>
 
-      <section aria-labelledby="pipeline-heading" className="space-y-4">
-        <h2 id="pipeline-heading" className="sr-only">
-          Pipeline overview
+      {/* Primary: next actions (outcome-first) */}
+      <section aria-labelledby="next-actions-heading">
+        <h2 id="next-actions-heading" className="sr-only">
+          Next actions
         </h2>
-        <DashboardStats stats={stats} />
         <DashboardNextActions
           followUpDueCount={analytics.followUpDueCount}
           noResponse7Count={analytics.noResponse7Count}
           staleCount={analytics.staleCount}
           interviewingCount={analytics.interviewingCount}
           applicationsLink="/dashboard/applications"
+          totalApplications={stats.total}
         />
-        <DashboardAnalytics
-          funnel={analytics.funnel}
-          responseRate={analytics.responseRate}
-          staleCount={analytics.staleCount}
-          noResponse7Count={analytics.noResponse7Count}
-        />
-        <DashboardTips />
       </section>
 
-      <section
-        aria-labelledby="quick-links-heading"
-        className="flex flex-wrap gap-3"
-      >
-        <h2 id="quick-links-heading" className="sr-only">
-          Quick actions
+      {/* Pipeline stats */}
+      <section aria-labelledby="pipeline-heading">
+        <h2 id="pipeline-heading" className="mb-4 text-sm font-semibold uppercase tracking-wider text-(--muted-foreground)">
+          Pipeline overview
         </h2>
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <Link href="/dashboard/applications">
-            <Briefcase className="size-4" aria-hidden />
-            View all applications
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <Link href="/dashboard/email">
-            <Mail className="size-4" aria-hidden />
-            Check email suggestions
-          </Link>
-        </Button>
+        <DashboardStats stats={stats} />
       </section>
 
-      <section aria-labelledby="tools-heading" className="space-y-4">
-        <div>
-          <h2
-            id="tools-heading"
-            className="text-lg font-semibold text-(--foreground)"
-          >
-            Get job-ready
+      {/* Two-column: analytics (main) + tips & profile */}
+      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        <section aria-labelledby="analytics-heading">
+          <h2 id="analytics-heading" className="mb-4 text-sm font-semibold uppercase tracking-wider text-(--muted-foreground)">
+            Analytics
           </h2>
-          <p className="mt-0.5 text-sm text-(--muted-foreground)">
-            Complete your profile to get the most out of Trackr.
-          </p>
-        </div>
-        <ProfileChecklistCard />
-      </section>
+          <DashboardAnalytics
+            funnel={analytics.funnel}
+            responseRate={analytics.responseRate}
+            staleCount={analytics.staleCount}
+            noResponse7Count={analytics.noResponse7Count}
+          />
+        </section>
+
+        <aside className="space-y-6" aria-label="Tips and profile">
+          <DashboardTips />
+          <div>
+            <h2 id="profile-heading" className="mb-4 text-sm font-semibold uppercase tracking-wider text-(--muted-foreground)">
+              Get job-ready
+            </h2>
+            <ProfileChecklistCard />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

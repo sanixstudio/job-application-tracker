@@ -57,36 +57,34 @@ const statConfig = [
 ];
 
 /**
- * Dashboard stat cards — clear hierarchy: large icon, prominent value, label.
- * Semantic colors guide the user through the pipeline.
+ * Dashboard stat cards — clear hierarchy: icon, prominent value, label.
+ * Semantic colors guide the user through the pipeline. Scannable at a glance.
  */
 export function DashboardStats({ stats }: DashboardStatsProps) {
   return (
     <section
       aria-label="Application pipeline summary"
-      className="grid gap-4 sm:gap-5 grid-cols-2 lg:grid-cols-5"
+      className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5"
     >
       {statConfig.map(({ title, valueKey, icon: Icon, iconBg, iconColor, cardAccent }) => (
         <Card
           key={title}
           role="group"
           aria-label={`${title}: ${stats[valueKey]}`}
-          className={`rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${cardAccent}`}
+          className={`rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden transition-shadow hover:shadow-md ${cardAccent}`}
         >
-          <CardContent className="flex flex-col gap-4 p-5">
-            <div className="flex items-start justify-between gap-3">
-              <span
-                className={`inline-flex size-12 shrink-0 items-center justify-center rounded-2xl ${iconBg} ${iconColor}`}
-                aria-hidden
-              >
-                <Icon className="size-6" strokeWidth={1.75} />
-              </span>
-            </div>
+          <CardContent className="flex flex-row items-center gap-4 p-4">
+            <span
+              className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
+              aria-hidden
+            >
+              <Icon className="size-5" strokeWidth={1.75} />
+            </span>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-sm font-medium text-(--muted-foreground) tracking-tight">
+              <p className="text-xs font-medium text-(--muted-foreground) uppercase tracking-wider">
                 {title}
               </p>
-              <p className="text-3xl font-bold tabular-nums tracking-tight text-(--foreground)">
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-(--foreground)">
                 {stats[valueKey]}
               </p>
             </div>

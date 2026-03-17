@@ -37,28 +37,26 @@ export function DashboardAnalytics({
   if (funnel.total === 0) {
     return (
       <section aria-label="Application analytics">
-        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) bg-linear-to-b from-(--primary)/5 to-transparent shadow-lg overflow-hidden">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-4">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-(--primary)/10 text-(--primary)">
-                <BarChart3 className="size-7" strokeWidth={1.5} />
-              </span>
-              <div className="min-w-0">
-                <CardTitle className="text-lg font-semibold text-(--foreground)">
-                  Analytics
-                </CardTitle>
-                <p className="mt-0.5 text-sm text-(--muted-foreground)">
-                  Add applications to see your funnel, response rate, and no-response metrics.
-                </p>
-                <Button asChild size="sm" className="mt-3 gap-2">
-                  <Link href="/dashboard/applications">
-                    <Plus className="size-4" aria-hidden />
-                    Add your first application
-                  </Link>
-                </Button>
-              </div>
+        <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden">
+          <CardContent className="p-5 flex flex-col sm:flex-row items-start gap-4">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-(--primary)/10 text-(--primary)">
+              <BarChart3 className="size-6" strokeWidth={1.5} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-(--foreground)">
+                No data yet
+              </p>
+              <p className="mt-0.5 text-sm text-(--muted-foreground)">
+                Add applications to see your funnel, response rate, and no-response metrics.
+              </p>
+              <Button asChild size="sm" className="mt-3 gap-2">
+                <Link href="/dashboard/applications">
+                  <Plus className="size-4" aria-hidden />
+                  Add your first application
+                </Link>
+              </Button>
             </div>
-          </CardHeader>
+          </CardContent>
         </Card>
       </section>
     );
@@ -70,21 +68,12 @@ export function DashboardAnalytics({
   );
 
   return (
-    <section aria-label="Application analytics" className="space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-(--primary)/10 text-(--primary)">
-          <BarChart3 className="size-5" strokeWidth={1.5} />
-        </span>
-        <h2 className="text-lg font-semibold text-(--foreground)">
-          Analytics
-        </h2>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-          <CardContent className="p-5 flex items-center gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--status-interview)/15 text-(--status-interview)">
-              <Percent className="size-6" strokeWidth={1.75} />
+    <section aria-label="Application analytics" className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+          <CardContent className="p-4 flex items-center gap-3">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-(--status-interview)/15 text-(--status-interview)">
+              <Percent className="size-5" strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
               <p className="text-sm font-medium text-(--muted-foreground)">
@@ -103,10 +92,10 @@ export function DashboardAnalytics({
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-          <CardContent className="p-5 flex items-center gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
-              <Clock className="size-6" strokeWidth={1.75} />
+        <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+          <CardContent className="p-4 flex items-center gap-3">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <Clock className="size-5" strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
               <p className="text-sm font-medium text-(--muted-foreground)">
@@ -128,10 +117,10 @@ export function DashboardAnalytics({
         </Card>
 
         {noResponse7Count > 0 && (
-          <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border-l-4 border-l-blue-500">
-            <CardContent className="p-5 flex items-center gap-4">
-              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
-                <Clock className="size-6" strokeWidth={1.75} />
+          <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden transition-shadow hover:shadow-md border-l-4 border-l-blue-500">
+            <CardContent className="p-4 flex items-center gap-3">
+              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                <Clock className="size-5" strokeWidth={1.75} />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-(--muted-foreground)">
@@ -152,13 +141,13 @@ export function DashboardAnalytics({
         )}
       </div>
 
-      <Card className="rounded-2xl border-2 border-(--border) bg-(--card) shadow-lg overflow-hidden">
-        <CardHeader className="border-b border-(--border) bg-linear-to-b from-(--primary)/5 to-transparent px-6 py-4">
-          <CardTitle className="text-base font-semibold text-(--foreground)">
+      <Card className="rounded-xl border border-(--border) bg-(--card) shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-(--border) bg-(--muted)/30 px-4 py-3">
+          <CardTitle className="text-sm font-semibold text-(--foreground)">
             Pipeline funnel
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 px-6 py-4">
+        <CardContent className="space-y-2.5 px-4 py-3">
           {FUNNEL_STAGES.map(({ key, label, color }) => {
             const count = funnel[key];
             const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
