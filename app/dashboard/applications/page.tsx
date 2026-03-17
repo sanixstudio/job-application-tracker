@@ -136,7 +136,7 @@ export default function ApplicationsPage() {
       </div>
 
       {view === "kanban" ? (
-        <JobKanbanBoard dateFilterDays={dateFilterDays} />
+        <JobKanbanBoard dateFilterDays={dateFilterDays} width="edge" />
       ) : (
         <JobList showHeading={false} />
       )}

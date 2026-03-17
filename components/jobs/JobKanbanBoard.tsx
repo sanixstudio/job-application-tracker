@@ -57,6 +57,8 @@ interface JobKanbanBoardProps {
   dateFilterDays?: number | null;
   /** Called when user clicks open on a card; default opens job URL in new tab. */
   onOpenJob?: (job: Application) => void;
+  /** Board width variant: `edge` uses full-bleed, `regular` stays contained. */
+  width?: "edge" | "regular";
 }
 
 /**
@@ -67,7 +69,11 @@ const defaultOpenJob = (job: Application) => {
   window.open(job.jobUrl, "_blank", "noopener,noreferrer");
 };
 
-export function JobKanbanBoard({ dateFilterDays = null, onOpenJob = defaultOpenJob }: JobKanbanBoardProps) {
+export function JobKanbanBoard({
+  dateFilterDays = null,
+  onOpenJob = defaultOpenJob,
+  width = "regular",
+}: JobKanbanBoardProps) {
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -142,7 +148,16 @@ export function JobKanbanBoard({ dateFilterDays = null, onOpenJob = defaultOpenJ
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="w-full">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-(--foreground)">Application board</p>
+            <p className="text-xs text-(--muted-foreground)">
+              Drag cards between columns to update status.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-flow-col auto-cols-[minmax(18rem,1fr)] gap-4 overflow-x-auto pb-4 pr-1">
         {KANBAN_COLUMNS.map((col) => (
           <div
             key={col.id}
@@ -151,9 +166,12 @@ export function JobKanbanBoard({ dateFilterDays = null, onOpenJob = defaultOpenJ
             )}
           />
         ))}
+        </div>
       </div>
     );
   }
+
+  const totalCount = filteredJobs.length;
 
   return (
     <DndContext
@@ -161,21 +179,50 @@ export function JobKanbanBoard({ dateFilterDays = null, onOpenJob = defaultOpenJ
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {KANBAN_COLUMNS.map((col) => (
-          <JobKanbanColumn
-            key={col.id}
-            columnId={col.id}
-            label={col.label}
-            jobs={groups[col.id] ?? []}
-            onOpenJob={onOpenJob}
-          />
-        ))}
+      <div
+        className={cn(
+          "w-full",
+          width === "edge" &&
+            "-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
+        )}
+      >
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium text-(--foreground)">Application board</p>
+              <span className="rounded-full bg-(--muted) px-2 py-0.5 text-xs text-(--muted-foreground)">
+                {totalCount} total
+              </span>
+              {dateFilterDays != null ? (
+                <span className="rounded-full bg-(--muted) px-2 py-0.5 text-xs text-(--muted-foreground)">
+                  last {dateFilterDays} days
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 text-xs text-(--muted-foreground)">
+              Drag a card to move it. Click a card to open the job link.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-flow-col auto-cols-[minmax(18rem,1fr)] gap-4 overflow-x-auto pb-4 pr-1">
+          {KANBAN_COLUMNS.map((col) => (
+            <JobKanbanColumn
+              key={col.id}
+              columnId={col.id}
+              label={col.label}
+              description={col.description}
+              accentClassName={col.accentClassName}
+              jobs={groups[col.id] ?? []}
+              onOpenJob={onOpenJob}
+            />
+          ))}
+        </div>
       </div>
 
       <DragOverlay>
         {activeJob ? (
-          <div className="w-72 opacity-95">
+          <div className="w-[18rem] opacity-95">
             <JobKanbanCard job={activeJob} isDragging />
           </div>
         ) : null}

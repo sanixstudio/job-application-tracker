@@ -64,10 +64,13 @@ export function JobKanbanCard({ job, isDragging, onOpenJob }: JobKanbanCardProps
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex cursor-grab active:cursor-grabbing rounded-xl border-2 border-(--border) bg-(--card) p-3 shadow-sm transition-shadow hover:shadow-md",
+        "group flex rounded-xl border-2 border-(--border) bg-(--card) p-3 shadow-sm transition-shadow hover:shadow-md",
+        "cursor-grab active:cursor-grabbing",
         dragging && "opacity-90 shadow-lg ring-2 ring-(--primary)/30 z-50"
       )}
+      onClick={() => onOpenJob?.(job)}
       {...attributes}
+      {...listeners}
     >
       <div className="flex min-w-0 flex-1 gap-3">
         <CompanyInitial name={job.companyName} />
@@ -102,14 +105,12 @@ export function JobKanbanCard({ job, isDragging, onOpenJob }: JobKanbanCardProps
             )}
           </div>
         </div>
-        <button
-          type="button"
-          className="touch-none shrink-0 rounded p-1 text-(--muted-foreground) hover:bg-(--muted) hover:text-(--foreground)"
-          aria-label="Drag to move"
-          {...listeners}
+        <span
+          className="pointer-events-none shrink-0 rounded p-1 text-(--muted-foreground) opacity-60 group-hover:opacity-100"
+          aria-hidden
         >
           <GripVertical className="size-4" />
-        </button>
+        </span>
       </div>
     </div>
   );
